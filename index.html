@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mels | Aspiring Tech System Infrastructure Engineer</title>
+    <style>
+        /* --- RETRO TERMINAL STYLING --- */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            --term-green: #33ff00;
+            --term-glow: #33ff0080;
+            --bg-color: #0d0d0d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #crt-screen {
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+            position: relative;
+            overflow-y: auto;
+            text-shadow: 0 0 5px var(--term-glow);
+        }
+
+        /* Scanlines */
+        #crt-screen::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
+            15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
+            100% { opacity: 0.98; }
+        }
+        #crt-screen { animation: flicker 0.15s infinite; }
+
+        a { color: var(--term-green); text-decoration: underline; cursor: pointer; }
+        a:hover { background-color: var(--term-green); color: var(--bg-color); text-decoration: none; }
+
+        #input-line { display: flex; align-items: center; margin-top: 10px; }
+        #prompt { margin-right: 10px; white-space: nowrap; }
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            outline: none;
+            flex-grow: 1;
+            text-shadow: 0 0 5px var(--term-glow);
+            text-transform: lowercase;
+        }
+
+        .hidden { display: none; }
+        .output-block { margin-bottom: 1rem; white-space: pre-wrap; }
+        .command-output { color: #ccffcc; } 
+        .ascii-art { font-size: 0.8rem; line-height: 0.8rem; margin-bottom: 2rem; color: var(--term-green); }
+    </style>
+</head>
+<body>
+
+<div id="crt-screen" onclick="document.getElementById('cmd-input').focus()">
+    <div id="terminal-output"></div>
+    
+    <div id="input-line" class="hidden">
+        <span id="prompt">mels@sysadmin:~$</span>
+        <input type="text" id="cmd-input" autocomplete="off" autofocus>
+    </div>
+</div>
+
+<script>
+    // --- PERSONALIZED CONFIGURATION ---
+    const user = "Rommel John 'Mels' Ronduen";
+    const role = "Aspiring Systems & Infrastructure Engineer";
+    
+    // ASCII Art Banner
+    const banner = `
+  __  __ ______ _       _____ 
+ |  \\/  |  ____| |     / ____|
+ | \\  / | |__  | |    | (___  
+ | |\\/| |  __| | |     \\___ \\ 
+ | |  | | |____| |____ ____) |
+ |_|  |_|______|______|_____/ 
+    `;
+
+    // Boot sequence customized for your skills
+    const bootSequence = [
+        "Initializing Mapua_University_Kernel v2026...",
+        "Loading modules: [C++] [Python] [OpenCV] [AWS]...",
+        "Checking peripherals: Raspberry Pi 5 detected...",
+        "Establishing connection to CCNA Network...",
+        "Mounting file system: /home/mels...",
+        "---------------------------------------------------",
+        `User: ${user}`,
+        `Role: ${role}`,
+        "Status: ACTIVE [Looking for Opportunities]",
+        "Type 'help' to see available commands.",
+        "---------------------------------------------------",
+    ];
+
+    // --- DATA FROM RESUME ---
+    const commands = {
+        help: "Available commands:\n  [about]    - Profile & Bio\n  [skills]   - Tech Stack (Net/Embedded/AI)\n  [projects] - Engineering Portfolio\n  [exp]      - Work & Research History\n  [certs]    - Certifications\n  [contact]  - Contact Info\n  [clear]    - Clear screen",
+        
+        about: `NAME: Rommel John Ronduen (Mels)\nEDUCATION: BS Computer Engineering, Mapua University (2022-2026)\n\nPROFILE:\nAspiring Tech Systems & Infrastructure Engineer with a strong foundation in network protocols, Linux administration, and embedded systems.\n\nDemonstrated agility through international research in Taiwan (CYCU) on Edge AI optimization and full-stack engineering of IoT solutions.\n\nFOCUS:\n > Network Design & Automation\n > Linux System Administration\n > System/Server/API Software Design\n\nHOW I STARTED:\nSince my youth, I have curated a passion for demonstrating the promises of technology. My first programming experience was in 2012 when I learned how to program in Lua for creating Garry's Mod addons and Roblox gameplay scripts. In 9th grade, I excelled as the top of my class for Java. I was also the top of my class for basic game development in ActionScript 3 where I developed a Final Fantasy maze game for a final project in Flash that got me the highest grade. Fast forward to undergraduate studies, I pursued a degree in Computer Engineering that provided me the learning resources to build key skills in the field while also being given the opportunity to demonstrate my excellence by representing my alma mater in nationwide competitions.\n\nWHY HIRE ME:\nI am someone that learns very quickly not because of greater effort nor productivity but through the ability to create natural curiosity out of skills that are needed to be learned. I use this capability to represent myself as not only a role model for my community, but to also make the most out of what I can learn from the expertise. I have proven this in the way I quickly and gracefully accomplished several competitions, research, and practicum work amidst my education. I became the motivation and source of guidance among my liaison, but at the same time I am an avid follower of those that provide guidance to what I need to learn.`,
+        
+        skills: `INFRASTRUCTURE & OS:\n  - Linux (Debian/RHEL), Systemd, Bash Scripting\n  - AWS (EC2, S3, VPC, IAM)\n  - Cisco Switching & Routing (OSPF, EIGRP, VLANs)\n\nSOFTWARE & AI:\n  - C/C++ (ECS Design, Socket Programming, CMake)\n  - Python (OpenCV, YOLO, Pandas)\n  - Java (Spring Boot, Maven)\n  - AI/ML (OpenVINO, RAG, Transformers)\n\nHARDWARE:\n  - Raspberry Pi / Single Board Computers\n  - Microcontrollers (ATmega328P, ESP32)\n  - PCB Design (KiCAD, Proteus)`,
+        
+      projects: `1. AUTOMATIC QUESTION GEN (Undergraduate Research)\n   > "Automatic Question Generation from Handwritten Lecture Notes"\n   > Design and implementation of a system that processes handwritten notes and provides quiz questions out of them\n   > Tech: TrOCR, T5, Raspberry Pi 5, Angular/Flask.\n   > Award: People's Choice & 1st Runner Up (Best Presenter).\n\n2. BOSSSENSOR (Taiwan CYCU Summer Camp)\n   > Tech: TensorFlow, Keras, BASH, Raspberry Pi 3.\n   > Award: Silver Project Awardee (Taiwan).\n   > Computer vision system to detect specific persons and execute local BASH scripts\n\n3. CLIENT-BASED EMBEDDED SYSTEM DESIGN (Undergraduate Design Capstone)\n   > "ATmega328P-based Cafe Ordering Interface with Stock and Beverage Monitoring"\n   > Tech: ATmega328P, PlatformIO, C++ embedded software design, Custom PCB Design on KiCAD.\n   > Systems design and implementation (PCB design) of kiosk-like ordering interface for a small milk tea shop\n   > Learned to perform client needs and feasibility analyses, soldering principles, digital signal conditioning, serial communication,\n     and PCB routing\n\n4. INTELLIGENT SEEK\n   > Tech: OpenVINO, Whisper, TrOCR.\n   > Awards: Honorable Mention (Intel & ASUS Competition).\n   > Video lecture transcription & quiz generation.\n   > First personal introduction to neural network optimization\n   > Applied REST API design principles and integration with React frontend\n\n5. OTTER PROTOCOL: AUTHENTICATION PROTOCOL FROM SCRATCH\n   > TCP client/server protocol from scratch for authenticating users\n   > Written in C (1999 standard) with only standard socket libraries\n   > Learned TCP/IP socket programming, data serialization/deserialization, memory allocation and safety, and basic public-key cryptography\n   > github.com/rommelskii/otter`,
+        
+        exp: `1. CYCU SUMMER CAMP (Taiwan) | Jul 2025 - Aug 2025\n   > Participant & Researcher.\n   > Collaborated on VLSI and Edge AI optimization.\n\n2. ICpEP.se MAPUA CHAPTER | Jun 2025 - Feb 2026\n   > Internal Vice President.\n   > Managed logistics for the 57th EECE Research Colloquium.\n\n3. GOOGLE DEVELOPER GROUP MANILA | Nov 2024 - Present\n   > Technical Associate for Events\n   > Managed live broadcast infra for DevFest and Build With AI.`,
+        
+        certs: `• CCNA 200-301 Learning Certificate (Packt) - Enterprise & Security\n• Red Hat Linux System Administration (IBM)\n• AWS Cloud Technical Essentials\n• Foundations of Cybersecurity (Google)\n• Cisco Ethical Hacker`,
+
+        contact: `Email: rommel.ronduen2244@gmail.com\nLinkedIn: linkedin.com/in/melskie\nPhone: +63 962 986 4843`
+    };
+
+    // --- LOGIC ---
+    const outputDiv = document.getElementById('terminal-output');
+    const inputLine = document.getElementById('input-line');
+    const inputField = document.getElementById('cmd-input');
+
+    async function boot() {
+        const pre = document.createElement('pre');
+        pre.className = "ascii-art";
+        pre.textContent = banner;
+        outputDiv.appendChild(pre);
+
+        for (let line of bootSequence) {
+            await typeLine(line, 10);
+        }
+        inputLine.classList.remove('hidden');
+        inputField.focus();
+    }
+
+    function typeLine(text, speed = 20) {
+        return new Promise(resolve => {
+            const p = document.createElement('div');
+            p.className = 'output-block';
+            outputDiv.appendChild(p);
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                p.textContent += text.charAt(i);
+                i++;
+                if (i > text.length - 1) {
+                    clearInterval(interval);
+                    window.scrollTo(0, document.body.scrollHeight);
+                    resolve();
+                }
+            }, speed);
+        });
+    }
+
+    function printOutput(text) {
+        const div = document.createElement('div');
+        div.className = 'output-block command-output';
+        div.innerText = text;
+        outputDiv.appendChild(div);
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    inputField.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const cmd = this.value.trim().toLowerCase();
+            const historyLine = document.createElement('div');
+            historyLine.innerHTML = `<span style="color:var(--term-green); margin-right:10px;">mels@sysadmin:~$</span> ${this.value}`;
+            outputDiv.appendChild(historyLine);
+
+            if (cmd === 'clear') {
+                outputDiv.innerHTML = '';
+            } else if (commands[cmd]) {
+                printOutput(commands[cmd]);
+            } else if (cmd === '') {
+            } else {
+                printOutput(`Command not found: ${cmd}. Type 'help' for list.`);
+            }
+            this.value = '';
+            const screen = document.getElementById('crt-screen');
+            screen.scrollTop = screen.scrollHeight;
+        }
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const current = this.value;
+            const matches = Object.keys(commands).filter(c => c.startsWith(current));
+            if (matches.length === 1) {
+                this.value = matches[0];
+            }
+        }
+    });
+
+    window.onload = boot;
+</script>
+
+</body>
+</html>
