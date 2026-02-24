@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mels | Aspiring Tech System Infrastructure Engineer</title>
+    <title>Mels | Systems Engineer Portfolio</title>
     <style>
-        /* --- RETRO TERMINAL STYLING --- */
+        /* --- CORE VARIABLES --- */
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         :root {
             --term-green: #33ff00;
-            --term-glow: #33ff0080;
+            --term-dim: #26b300;
             --bg-color: #0d0d0d;
         }
 
@@ -18,51 +18,94 @@
             background-color: var(--bg-color);
             color: var(--term-green);
             font-family: 'VT323', monospace;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             margin: 0;
             padding: 0;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
+        /* --- LAYOUTS --- */
+        #main-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 1. TERMINAL SCREEN */
         #crt-screen {
             width: 100%;
             height: 100%;
             padding: 2rem;
             box-sizing: border-box;
-            position: relative;
             overflow-y: auto;
-            text-shadow: 0 0 5px var(--term-glow);
+            text-shadow: 0 0 4px var(--term-dim);
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Scanlines */
-        #crt-screen::before {
-            content: " ";
-            display: block;
-            position: absolute;
+        /* 2. MODAL OVERLAY (The "Hover Box") */
+        #modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Dimmed background */
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
-            15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
-            100% { opacity: 0.98; }
+        #modal-box {
+            width: 70%;
+            max-width: 800px;
+            max-height: 80vh;
+            background-color: #000;
+            border: 2px solid var(--term-green);
+            box-shadow: 0 0 15px var(--term-dim);
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
-        #crt-screen { animation: flicker 0.15s infinite; }
 
-        a { color: var(--term-green); text-decoration: underline; cursor: pointer; }
-        a:hover { background-color: var(--term-green); color: var(--bg-color); text-decoration: none; }
+        .modal-header {
+            border-bottom: 1px dashed var(--term-dim);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: var(--term-green);
+        }
 
+        .modal-content {
+            white-space: pre-wrap;
+            color: #ccffcc;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--term-dim);
+            text-align: center;
+            color: var(--term-dim);
+            font-size: 1rem;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* --- TERMINAL COMPONENTS --- */
+        .hidden { display: none; }
+        .output-block { margin-bottom: 1rem; white-space: pre-wrap; }
+        .command-output { color: #ccffcc; } 
+        .ascii-art { font-size: 0.8rem; line-height: 0.8rem; margin-bottom: 2rem; color: var(--term-green); }
+        
         #input-line { display: flex; align-items: center; margin-top: 10px; }
         #prompt { margin-right: 10px; white-space: nowrap; }
         #cmd-input {
@@ -70,36 +113,67 @@
             border: none;
             color: var(--term-green);
             font-family: 'VT323', monospace;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             outline: none;
             flex-grow: 1;
-            text-shadow: 0 0 5px var(--term-glow);
+            text-shadow: 0 0 4px var(--term-dim);
             text-transform: lowercase;
         }
 
-        .hidden { display: none; }
-        .output-block { margin-bottom: 1rem; white-space: pre-wrap; }
-        .command-output { color: #ccffcc; } 
-        .ascii-art { font-size: 0.8rem; line-height: 0.8rem; margin-bottom: 2rem; color: var(--term-green); }
+        /* CRT EFFECTS (Overlay) */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 999; /* On top of everything */
+        }
+        .flicker { animation: flicker 0.15s infinite; }
+        @keyframes flicker {
+            0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
+            15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
+            100% { opacity: 0.98; }
+        }
+
+        /* UTILS */
+        a { color: var(--term-green); }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #001100; }
+        ::-webkit-scrollbar-thumb { background: var(--term-dim); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
     </style>
 </head>
 <body>
 
-<div id="crt-screen" onclick="document.getElementById('cmd-input').focus()">
-    <div id="terminal-output"></div>
+<div class="scanlines"></div>
+
+<div id="main-container" class="flicker">
     
-    <div id="input-line" class="hidden">
-        <span id="prompt">guest@portfolio:~$</span>
-        <input type="text" id="cmd-input" autocomplete="off" autofocus>
+    <div id="crt-screen" onclick="document.getElementById('cmd-input').focus()">
+        <div id="terminal-output"></div>
+        <div id="input-line" class="hidden">
+            <span id="prompt">guest@portfolio:~$</span>
+            <input type="text" id="cmd-input" autocomplete="off" autofocus>
+        </div>
     </div>
+
+    <div id="modal-overlay">
+        <div id="modal-box">
+            <div class="modal-header" id="modal-title">TITLE</div>
+            <div class="modal-content" id="modal-body">Content goes here...</div>
+            <div class="modal-footer">-- PRESS ANY KEY TO CLOSE --</div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    // --- PERSONALIZED CONFIGURATION ---
+    // --- CONFIGURATION ---
     const user = "Rommel John 'Mels' Ronduen";
     const role = "Tech Systems & Infrastructure Enthusiast";
     
-    // ASCII Art Banner
+    // ASCII Art
     const banner = `
   __  __ ______ _       _____ 
  |  \\/  |  ____| |     / ____|
@@ -111,12 +185,11 @@
      PORTFOLIO SYSTEM v1.0 
       `;
 
-    // Boot sequence customized for your skills
+    // Boot Text
     const bootSequence = [
         "Initializing Ronduen_Portfolio_Kernel v2026...",
         "Loading modules: [C/C++] [Python] [AWS] [Cisco] [GNU/Linux]...",
         "Checking peripherals: Raspberry Pi 5 detected...",
-        "Establishing connection to CCNA Network...",
         "Mounting file system: /home/mels...",
         "---------------------------------------------------",
         `User: ${user}`,
@@ -126,28 +199,85 @@
         "---------------------------------------------------",
     ];
 
-    // --- DATA FROM RESUME ---
-    const commands = {
-        help: "Available commands:\n  [about]    - Profile & Bio\n  [skills]   - Tech Stack (Net/Embedded/AI)\n  [projects] - Engineering Portfolio\n  [exp]      - Work & Research History\n  [certs]    - Certifications\n  [contact]  - Contact Info\n  [clear]    - Clear screen",
+    // --- FILE SYSTEM DATA ---
+    const fileSystem = {
+        about: {
+            title: "README.md",
+            content: `NAME: Rommel John Ronduen (Mels)\nEDUCATION: BS Computer Engineering, Mapua University (2022-2026)\n\nFOCUS:\n > Network Design & Automation\n > Linux System Administration\n > System/Server/API Design\n\nHOBBIES:\n > I play a lot of retro games from the PS1/PS2/XBox era.\n > I brew coffee using the pour-over technique.\n > I absolutely LOVE walking around and exploring nature.\n\nTECH ENVIRONMENT:\n > Neovim (Comic Sans font)\n > Arch Linux (Personal) / Fedora (Server)\n\nPROFILE:\nAspiring Tech Systems & Infrastructure Engineer with a strong foundation in network protocols, Linux system administration, and embedded systems design.\n\nDemonstrated learning agility through international research (Taiwan CYCU), IEEE publications, and ICpEP competitions.\n\nHOW I STARTED:\nSince my youth, I have curated a passion for demonstrating the promises of technology. My first programming experience was in 2012 when I learned how to program in Lua for creating Garry's Mod addons and Roblox gameplay scripts.\n\nIn 9th grade, I excelled as the top of my class for Java. Fast forward to undergraduate studies, I pursued a degree in Computer Engineering that provided me the learning resources to build key skills in the field.\n\nWHY HIRE ME:\nI am someone that learns very quickly not because of greater effort nor productivity but through the ability to create natural curiosity out of skills that are needed to be learned. I use this capability to represent myself as not only a role model for my community, but to also make the most out of what I can learn from the expertise.`
+        },
         
-      about: `NAME: Rommel John Ronduen (Mels)\nEDUCATION: BS Computer Engineering, Mapua University (2022-2026)\n\nFOCUS:\n > Network Design & Automation\n > Linux System Administration\n > System/Server/API Design\n\nHOBBIES:\n > I play a lot of retro games from the PS1/PS2/XBox era, most especially RPG games.\n > I brew coffee using the pour-over technique for people and for myself (I am a coffee-lover).\n > I absolutely LOVE walking around and exploring nature.\n\nTECH I USE:\n > i use neovim with a comic sans font on a terminal emulator\n > arch linux user (since 2022)\n > occasionally using macOS for work and coding\n > desktop pc with fedora for server development/tinkering\n\nPROFILE:\nAspiring Tech Systems & Infrastructure Engineer with a strong foundation in network protocols, Linux system administration, software/server/API design, and embedded systems design and implementation.\n\nDemonstrated learning agility and adaptability through competitions (Institute of Computer Engineers of the Philippines - ICpEP), international research (published IEEE and Scopus-indexed researcher), and international student experience in Taiwan (Chung Yuan Christian University) on Edge AI optimization and full-stack engineering of IoT solutions.\n\nHOW I STARTED:\nSince my youth, I have curated a passion for demonstrating the promises of technology. My first programming experience was in 2012 when I learned how to program in Lua for creating Garry's Mod addons and Roblox gameplay scripts. In 9th grade, I excelled as the top of my class for Java. I was also the top of my class for basic game development in ActionScript 3 where I developed a Final Fantasy maze game for a final project in Flash that got me the highest grade. Fast forward to undergraduate studies, I pursued a degree in Computer Engineering that provided me the learning resources to build key skills in the field while also being given the opportunity to demonstrate my excellence by representing my alma mater in nationwide competitions.\n\nWHY HIRE ME:\nI am someone that learns very quickly not because of greater effort nor productivity but through the ability to create natural curiosity out of skills that are needed to be learned. I use this capability to represent myself as not only a role model for my community, but to also make the most out of what I can learn from the expertise. I have proven this in the way I quickly and gracefully accomplished several competitions, research, and practicum work amidst my education. I became the motivation and source of guidance among my liaison, but at the same time I am an avid follower of those that provide guidance to what I need to learn.\n\n`,
-        
-      skills: `INFRASTRUCTURE & OS:\n  - Linux (Debian/RHEL), Log Management, User Management and Permissions, BASH Scripting\n  - Amazon Web Services (EC2, S3, VPC, IAM)\n  - Switching & Routing (Spanning-Tree, VLAN Management, IGP Routing, Static Routing, HSRP, ACLs)\n\nSOFTWARE & AI:\n  - C/C++ (ECS Design, Socket Programming, CMake Build System, GTest)\n  - Python (PyTest, OpenCV, YOLO, Pandas)\n  - Java (Spring Boot, Maven)\n  - TypeScript/JavaScript (with Angular for front-end development)\n  - AI/ML (OpenVINO, RAG, Transformers, Google Vertex AI)\n\nHARDWARE:\n  - Raspberry Pi / Single Board Computers\n  - Microcontrollers (ATmega328P, ESP32)\n  - Digital System Design (74xx IC series)\n  - PCB Design (KiCAD, Proteus)`,
-        
-      projects: `1. AUTOMATIC QUESTION GEN (Undergraduate Research)\n   > "Automatic Question Generation from Handwritten Lecture Notes"\n   > Tech: TrOCR, T5, Raspberry Pi 5, Angular/Flask.\n   > Award: People's Choice & 1st Runner Up (Best Presenter)\n   > Design and implementation of a system that processes handwritten notes and provides quiz questions out of them\n\n2. CLIENT-BASED EMBEDDED SYSTEM DESIGN (Undergraduate Design Capstone)\n   > "ATmega328P-based Cafe Ordering Interface with Stock and Beverage Monitoring"\n   > Tech: ATmega328P, PlatformIO, C++ embedded software design, Custom PCB Design on KiCAD.\n   > Systems design and implementation (PCB design) of kiosk-like ordering interface for a small milk tea shop\n   > Learned to perform client needs and feasibility analyses, soldering principles, digital signal conditioning, serial communication,\n     and PCB routing\n\n3. BOSS_SENSOR (Taiwan CYCU Summer Camp)\n   > Tech: TensorFlow, Keras, BASH, Raspberry Pi 3.\n   > Award: Silver Project Awardee\n   > Computer vision system to detect specific persons and execute local BASH scripts\n\n4. INTELLIGENT SEEK (CYCU Intel x ASUS OpenVINO Competition)\n   > Tech: OpenVINO, Whisper, TrOCR.\n   > Awards: Honorable Mention\n   > Video lecture transcription & quiz generation.\n   > First personal introduction to neural network optimization\n   > Applied REST API design principles and integration with React frontend\n\n5. OTTER PROTOCOL: AUTHENTICATION PROTOCOL FROM SCRATCH (personal project)\n   > TCP client/server protocol from scratch for authenticating users\n   > Written in C (1999 standard) with only standard socket libraries\n   > Learned TCP/IP socket programming, unit testing, data serialization/deserialization, memory allocation and safety, and basic public-key cryptography\n   > github.com/rommelskii/otter`,
-        
-      exp: `1. CYCU SUMMER CAMP (Taiwan) | Jul 2025 - Aug 2025\n   > Summer Camp Participant\n   > This opportunity was granted to students in my batch that demonstrated excellence in my program. It was a 3-week educational summer camp that allowed us to learn emerging AI technology\n     from the industry perspective of Taiwan through semiconductor technologies and software breakthroughs.\n   > We were assigned to groups based on specific topics. I belonged to the Computer Vision and Pattern Recognition team which aligned with my research agenda. In the 3-week span\n     of the camp, we were given learning materials and project designs to demonstrate what we learned. In the end, we presented our project to everyone and we won a\n     silver medal for the project.\n\n2. ICpEP.se MAPUA CHAPTER | Jun 2025 - Feb 2026\n   > Internal Vice President\n   > Handled pre-event and post-event analyses through labor division, task dissemination, budget planning, and handling internal matters among commitees.\n\n3. GOOGLE DEVELOPER GROUP MANILA | Nov 2024 - Present\n   > Technical Associate for Events\n   > Livestream management, audio/visual production, and technical support for Google Cloud Platform workshops.`,
-        
-        certs: `• CCNA 200-301: Guide to Getting Certified (Packt) - Enterprise & Security\n• Red Hat Linux System Administration (IBM)\n• AWS Cloud Technical Essentials (Amazon Web Services)\n• Object-Oriented Programming in Java (IBM)\n• Foundations of Cybersecurity (Google)\n• Cisco NetAcad CCNA 1-4: Introduction to Networks (ITN), Switching, Routing, and Wireless Essentials (SRWE),\n  Enterprise Networking Security and Automation (ENSA), and Network Security (NS)`,
+        skills: {
+            title: "skills.conf",
+            content: `INFRASTRUCTURE & OS:\n  - Linux (Debian/RHEL), BASH Scripting\n  - AWS (EC2, S3, VPC, IAM)\n  - Cisco Switching & Routing (OSPF, VLANs, ACLs)\n\nSOFTWARE & AI:\n  - C/C++ (Socket Programming, CMake, GTest)\n  - Python (OpenCV, YOLO, Pandas, PyTest)\n  - Java (Spring Boot, Maven)\n  - AI/ML (OpenVINO, RAG, Transformers)\n\nHARDWARE:\n  - Raspberry Pi / ESP32 / ATmega328P\n  - PCB Design (KiCAD, Proteus)`
+        },
 
-        contact: `Email: rommel.ronduen2244@gmail.com\nLinkedIn: linkedin.com/in/melskie\nPhone: +63 962 986 4843`
+        contact: {
+            title: "contact_info.txt",
+            content: `Email: rommel.ronduen2244@gmail.com\nLinkedIn: linkedin.com/in/melskie\nPhone: +63 962 986 4843`
+        },
+
+        projects: {
+            type: 'folder',
+            intro: "Engineering Portfolio.",
+            list: "1. Automatic Question Gen (Research)\n2. Client-Based Embedded System (Capstone)\n3. Boss_Sensor (Computer Vision)\n4. Intelligent Seek (AI/ML)\n5. Otter Protocol (Network Dev)",
+            items: {
+                "1": { title: "auto_q_gen.cpp", content: `PROJECT: Automatic Question Gen (Undergraduate Research)\n------------------------------------------------\n> "Automatic Question Generation from Handwritten Lecture Notes"\n> Tech: TrOCR, T5, Raspberry Pi 5, Angular/Flask.\n> Award: People's Choice & 1st Runner Up (Best Presenter)\n\nDESCRIPTION:\nDesign and implementation of a system that processes handwritten notes and provides quiz questions out of them.` },
+                
+                "2": { title: "cafe_embedded.c", content: `PROJECT: Client-Based Embedded System Design\n------------------------------------------------\n> "ATmega328P-based Cafe Ordering Interface"\n> Tech: ATmega328P, PlatformIO, C++, KiCAD.\n\nDESCRIPTION:\nSystems design and implementation (PCB design) of kiosk-like ordering interface for a small milk tea shop. Learned to perform client needs analyses, soldering, digital signal conditioning, and serial communication.` },
+                
+                "3": { title: "boss_sensor.sh", content: `PROJECT: Boss_Sensor (Taiwan CYCU Summer Camp)\n------------------------------------------------\n> Tech: TensorFlow, Keras, BASH, Raspberry Pi 3.\n> Award: Silver Project Awardee\n\nDESCRIPTION:\nComputer vision system to detect specific persons and execute local BASH scripts upon detection.` },
+                
+                "4": { title: "intelligent_seek.py", content: `PROJECT: Intelligent Seek (Intel x ASUS Competition)\n------------------------------------------------\n> Tech: OpenVINO, Whisper, TrOCR.\n> Awards: Honorable Mention\n\nDESCRIPTION:\nVideo lecture transcription & quiz generation. First personal introduction to neural network optimization. Applied REST API design principles.` },
+                
+                "5": { title: "otter_protocol.c", content: `PROJECT: Otter Protocol (Personal)\n------------------------------------------------\n> TCP client/server protocol from scratch.\n> Written in C (1999 standard) with only standard socket libraries.\n\nDESCRIPTION:\nLearned TCP/IP socket programming, unit testing, data serialization/deserialization, memory allocation safety, and basic public-key cryptography.\n> Source: github.com/rommelskii/otter` }
+            }
+        },
+
+        exp: {
+            type: 'folder',
+            intro: "Experience Log.",
+            list: "1. CYCU Summer Camp (Taiwan)\n2. ICpEP.se Mapua Chapter\n3. Google Developer Group Manila",
+            items: {
+                "1": { title: "cycu_taiwan.log", content: `ROLE: Summer Camp Participant\nORG: CYCU SUMMER CAMP (Taiwan) | Jul 2025 - Aug 2025\n------------------------------------------------\n> Selected for academic excellence to learn emerging AI/Semicon tech in Taiwan.\n> Member of Computer Vision and Pattern Recognition team.\n> Developed 'BossSensor' project and won Silver Medal.` },
+                
+                "2": { title: "icpep_officer.log", content: `ROLE: Internal Vice President\nORG: ICpEP.se MAPUA CHAPTER | Jun 2025 - Feb 2026\n------------------------------------------------\n> Handled pre-event and post-event analyses through labor division.\n> Managed logistics for the 57th EECE Research Colloquium.` },
+                
+                "3": { title: "gdg_manila.log", content: `ROLE: Technical Associate for Events\nORG: GOOGLE DEVELOPER GROUP MANILA | Nov 2024 - Present\n------------------------------------------------\n> Livestream management and A/V production.\n> Provided technical support for Google Cloud Platform workshops.` }
+            }
+        },
+
+        certs: {
+            type: 'folder',
+            intro: "Certificates.",
+            list: "1. CCNA 200-301 (Packt)\n2. Red Hat System Admin (IBM)\n3. AWS Cloud Technical Essentials\n4. Ethical Hacker (Cisco)",
+            items: {
+                "1": { title: "ccna_packt.crt", content: `CERT: CCNA 200-301: Guide to Getting Certified\nISSUER: Packt\n------------------------------------------------\n> Focused on network engineering protocols and design.\n> Reinforced understanding of network design for specific use-cases (Enterprise & Security).` },
+                
+                "2": { title: "rhel_admin.crt", content: `CERT: Red Hat Linux System Administration\nISSUER: IBM\n------------------------------------------------\n> First formal credential for Linux server administration.\n> Covered RHEL distribution, server management, and systemd.` },
+                
+                "3": { title: "aws_cloud.crt", content: `CERT: AWS Cloud Technical Essentials\nISSUER: Amazon Web Services\n------------------------------------------------\n> Hands-on experience with EC2, IAM permissions, and S3/ECS/EKS storage architecture.` },
+                
+                "4": { title: "ethical_hacker.crt", content: `CERT: Ethical Hacker\nISSUER: Cisco NetAcad\n------------------------------------------------\n> Hands-on experience with penetration testing, security auditing, and network security implementations.` }
+            }
+        }
     };
 
-    // --- LOGIC ---
+    // --- STATE & DOM ---
+    let currentDirectory = null;
+    let isModalOpen = false;
+
     const outputDiv = document.getElementById('terminal-output');
     const inputLine = document.getElementById('input-line');
     const inputField = document.getElementById('cmd-input');
+    const promptSpan = document.getElementById('prompt');
+    const crtScreen = document.getElementById('crt-screen');
+    
+    // Modal Elements
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
 
+    // --- SYSTEM BOOT ---
     async function boot() {
         const pre = document.createElement('pre');
         pre.className = "ascii-art";
@@ -180,39 +310,130 @@
         });
     }
 
-    function printOutput(text) {
+    // --- MODAL LOGIC ---
+    function openModal(dataItem) {
+        isModalOpen = true;
+        modalTitle.textContent = dataItem.title || "DETAILS";
+        modalBody.textContent = dataItem.content;
+        modalOverlay.style.display = 'flex'; // Show modal
+    }
+
+    function closeModal() {
+        if (!isModalOpen) return;
+        isModalOpen = false;
+        modalOverlay.style.display = 'none'; // Hide modal
+        inputField.focus();
+
+        // LOGIC: Re-print the menu for the current directory
+        if (currentDirectory && fileSystem[currentDirectory]) {
+            const dir = fileSystem[currentDirectory];
+            printOutput(`\n[Returned from view]`, "");
+            printOutput(dir.list, "[Type number to view details, or 'back' to return]");
+        } else {
+             printOutput(`\n[Returned to shell]`, "");
+        }
+    }
+
+    // --- TERMINAL LOGIC ---
+    function printOutput(text, footer = "") {
         const div = document.createElement('div');
         div.className = 'output-block command-output';
         div.innerText = text;
+        if (footer) div.innerHTML += `<br><br><span style="color:#666;">${footer}</span>`;
         outputDiv.appendChild(div);
-        window.scrollTo(0, document.body.scrollHeight);
+        
+        crtScreen.scrollTop = crtScreen.scrollHeight;
     }
 
+    function updatePrompt() {
+        promptSpan.innerText = currentDirectory ? `guest@portfolio:~/${currentDirectory}$` : `guest@portfolio:~$`;
+    }
+
+    // --- EVENT LISTENERS ---
+    
+    // 1. Global Keydown (for closing modal)
+    document.addEventListener('keydown', function(e) {
+        if (isModalOpen) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        }
+    });
+    
+    // Click listener for modal
+    modalOverlay.addEventListener('click', function() {
+        closeModal();
+    });
+
+    // 2. Terminal Input Listener
     inputField.addEventListener('keydown', function(e) {
+        if (isModalOpen) return; // Ignore input if in modal
+
         if (e.key === 'Enter') {
-            const cmd = this.value.trim().toLowerCase();
+            e.stopPropagation(); // <--- CRITICAL FIX: Stops bubble up to global listener
+            
+            const input = this.value.trim().toLowerCase();
+            
+            // History
             const historyLine = document.createElement('div');
-            historyLine.innerHTML = `<span style="color:var(--term-green); margin-right:10px;">guest@portfolio:~$</span> ${this.value}`;
+            historyLine.innerHTML = `<span style="color:var(--term-green); margin-right:10px;">${promptSpan.innerText}</span> ${this.value}`;
             outputDiv.appendChild(historyLine);
 
-            if (cmd === 'clear') {
+            // Command Handling
+            if (input === 'clear') {
                 outputDiv.innerHTML = '';
-            } else if (commands[cmd]) {
-                printOutput(commands[cmd]);
-            } else if (cmd === '') {
-            } else {
-                printOutput(`Command not found: ${cmd}. Type 'help' for list.`);
+            } 
+            else if (input === 'back' || input === 'exit') {
+                if (currentDirectory) {
+                    currentDirectory = null;
+                    updatePrompt();
+                    printOutput("Returning to root...", "[Type 'help' for options]");
+                } 
             }
+            else if (input === 'help') {
+                if (currentDirectory) {
+                     printOutput(fileSystem[currentDirectory].list, "[Type 'back' to return to root]");
+                } else {
+                     printOutput("Available commands:\n  [about]    - Profile & Bio\n  [skills]   - Tech Stack\n  [projects] - Portfolio (Dir)\n  [exp]      - Experience (Dir)\n  [certs]    - Certifications (Dir)\n  [contact]  - Contact Info");
+                }
+            }
+            // Directory Handling
+            else if (currentDirectory) {
+                const currentFolder = fileSystem[currentDirectory];
+                if (currentFolder.items[input]) {
+                    // LAUNCH MODAL
+                    openModal(currentFolder.items[input]);
+                } else {
+                    printOutput(`Invalid option. Type a number.\n\n${currentFolder.list}`, "[Type 'back' to return]");
+                }
+            }
+            // Root Handling
+            else {
+                if (fileSystem[input]) {
+                    const result = fileSystem[input];
+                    if (result.type === 'folder') {
+                        currentDirectory = input;
+                        updatePrompt();
+                        printOutput(result.intro + "\n\n" + result.list, "[Type number to view details]");
+                    } else {
+                        // Single File -> Open Modal
+                        openModal(result);
+                    }
+                } else if (input !== '') {
+                    printOutput(`Command not found: ${input}.`);
+                }
+            }
+
             this.value = '';
-            const screen = document.getElementById('crt-screen');
-            screen.scrollTop = screen.scrollHeight;
+            crtScreen.scrollTop = crtScreen.scrollHeight;
         }
+        
+        // Tab Completion
         if (e.key === 'Tab') {
             e.preventDefault();
-            const current = this.value;
-            const matches = Object.keys(commands).filter(c => c.startsWith(current));
-            if (matches.length === 1) {
-                this.value = matches[0];
+            if (!currentDirectory) {
+                const matches = Object.keys(fileSystem).filter(c => c.startsWith(this.value));
+                if (matches.length === 1) this.value = matches[0];
             }
         }
     });
