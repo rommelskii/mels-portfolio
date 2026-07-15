@@ -1,526 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>huh</title>
-		<style>
-/* --- CORE VARIABLES --- */
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>huh</title>
+    <style>
+        /* --- CORE VARIABLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-:root {
-	--term-green: #33ff00;
-	--term-dim: #26b300;
-	--bg-color: #0d0d0d;
-}
+        :root {
+            --term-green: #33ff00;
+            --term-dim: #26b300;
+            --bg-color: #0d0d0d;
+        }
 
-	body {
-		background-color: var(--bg-color);
-		color: var(--term-green);
-		font-family: 'VT323', monospace;
-		font-size: 1.3rem;
-		margin: 0;
-		padding: 0;
-		overflow: hidden;
-		height: 100vh;
-	}
+        body {
+            background-color: var(--bg-color);
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
 
-	/* --- LAYOUTS --- */
-	#main-container {
-		width: 100%;
-		height: 100%;
-		position: relative;
-	}
+        /* --- LAYOUTS --- */
+        #main-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
 
-	/* 1. TERMINAL SCREEN */
-	#crt-screen {
-		width: 100%;
-		height: 100%;
-		padding: 2rem;
-		box-sizing: border-box;
-		overflow-y: auto;
-		text-shadow: 0 0 4px var(--term-dim);
-		display: flex;
-		flex-direction: column;
-	}
+        #crt-screen {
+            width: 100%;
+            height: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+            text-shadow: 0 0 4px var(--term-dim);
+            display: flex;
+            flex-direction: column;
+        }
 
-	/* 2. MODAL OVERLAY (The "Hover Box") */
-	#modal-overlay {
-		display: none;
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0, 0, 0, 0.85);
-		z-index: 100;
-		justify-content: center;
-		align-items: center;
-		backdrop-filter: blur(2px);
-	}
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
 
-	#modal-box {
-		width: 70%;
-		max-width: 800px;
-		max-height: 80vh;
-		background-color: #000;
-		border: 2px solid var(--term-green);
-		box-shadow: 0 0 15px var(--term-dim);
-		padding: 20px;
-		overflow-y: auto;
-		position: relative;
-		display: flex;
-		flex-direction: column;
-	}
+        #modal-box {
+            width: 70%;
+            max-width: 800px;
+            max-height: 80vh;
+            background-color: #000;
+            border: 2px solid var(--term-green);
+            box-shadow: 0 0 15px var(--term-dim);
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
 
-	.modal-header {
-		border-bottom: 1px dashed var(--term-dim);
-		padding-bottom: 10px;
-		margin-bottom: 15px;
-		font-weight: bold;
-		color: var(--term-green);
-	}
+        .modal-header {
+            border-bottom: 1px dashed var(--term-dim);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: var(--term-green);
+        }
 
-	.modal-content {
-		white-space: pre-wrap;
-		color: #ccffcc;
-		line-height: 1.5;
-		flex-grow: 1;
-	}
+        .modal-content {
+            white-space: pre-wrap;
+            color: #ccffcc;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
 
-	.modal-footer {
-		margin-top: 20px;
-		padding-top: 10px;
-		border-top: 1px dashed var(--term-dim);
-		text-align: center;
-		color: var(--term-dim);
-		font-size: 1rem;
-		animation: blink 1.5s infinite;
-	}
+        .modal-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--term-dim);
+            text-align: center;
+            color: var(--term-dim);
+            font-size: 1rem;
+            animation: blink 1.5s infinite;
+        }
 
-	@keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes blink { 50% { opacity: 0.5; } }
 
-	/* --- TERMINAL COMPONENTS --- */
-	.hidden { display: none; }
-	.output-block { margin-bottom: 1rem; white-space: pre-wrap; }
-	.command-output { color: #ccffcc; } 
-	.ascii-art { font-size: 0.8rem; line-height: 0.8rem; margin-bottom: 2rem; color: var(--term-green); }
+        .hidden { display: none; }
+        .output-block { margin-bottom: 1rem; white-space: pre-wrap; }
+        .command-output { color: #ccffcc; } 
+        .ascii-art { font-size: 0.8rem; line-height: 0.8rem; margin-bottom: 2rem; color: var(--term-green); }
 
-	#input-line { display: flex; align-items: center; margin-top: 10px; }
-	#prompt { margin-right: 10px; white-space: nowrap; }
-	#cmd-input {
-		background: transparent;
-		border: none;
-		color: var(--term-green);
-		font-family: 'VT323', monospace;
-		font-size: 1.3rem;
-		outline: none;
-		flex-grow: 1;
-		text-shadow: 0 0 4px var(--term-dim);
-		text-transform: lowercase;
-	}
+        #input-line { display: flex; align-items: center; margin-top: 10px; }
+        #prompt { margin-right: 10px; white-space: nowrap; }
+        #cmd-input {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            outline: none;
+            flex-grow: 1;
+            text-shadow: 0 0 4px var(--term-dim);
+            text-transform: lowercase;
+        }
 
-	/* CRT EFFECTS (Overlay) */
-	.scanlines {
-		position: fixed;
-		top: 0; left: 0; bottom: 0; right: 0;
-		background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-		background-size: 100% 2px, 3px 100%;
-		pointer-events: none;
-		z-index: 999;
-	}
-	.flicker { animation: flicker 0.15s infinite; }
-	@keyframes flicker {
-		0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
-		15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
-		100% { opacity: 0.98; }
-	}
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .flicker { animation: flicker 0.15s infinite; }
+        @keyframes flicker {
+            0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
+            15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
+            100% { opacity: 0.98; }
+        }
 
-	/* UTILS */
-	a { color: var(--term-green); }
-	::-webkit-scrollbar { width: 10px; }
-	::-webkit-scrollbar-track { background: #001100; }
-	::-webkit-scrollbar-thumb { background: var(--term-dim); }
-	::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
+        a { color: var(--term-green); }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #001100; }
+        ::-webkit-scrollbar-thumb { background: var(--term-dim); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--term-green); }
 
-	/* --- BLACKWALL GLITCH EFFECT (Digital Artifacting) --- */
-	#blackwall-overlay {
-		display: none;
-		position: fixed;
-		top: 0; left: 0; bottom: 0; right: 0;
-		box-shadow: inset 0 0 120px rgba(255, 0, 0, 0.9);
-		/* Creates a chunky, pixelated video macroblock grid */
-		background: 
-			repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
-			repeating-linear-gradient(0deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
-			repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255, 0, 0, 0.4) 12px, transparent 16px);
-		z-index: 2000;
-		pointer-events: none;
-		mix-blend-mode: color-dodge;
-	}
+        #blackwall-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            box-shadow: inset 0 0 120px rgba(255, 0, 0, 0.9);
+            background: 
+                repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
+                repeating-linear-gradient(0deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
+                repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255, 0, 0, 0.4) 12px, transparent 16px);
+            z-index: 2000;
+            pointer-events: none;
+            mix-blend-mode: color-dodge;
+        }
 
-	#blackwall-overlay.active {
-		display: block;
-		animation: artifact-scan 0.15s steps(2) infinite;
-	}
+        #blackwall-overlay.active {
+            display: block;
+            animation: artifact-scan 0.15s steps(2) infinite;
+        }
 
-	/* Jumps the pixel grid around erratically */
-	@keyframes artifact-scan {
-		0% { background-position: 0 0, 0 0, 0 0; opacity: 1; }
-		25% { background-position: 15px 0, 0 15px, 0 20px; opacity: 0.6; }
-		50% { background-position: -15px 15px, 15px -15px, 0 -40px; opacity: 0.9; }
-		75% { background-position: 30px -15px, -15px 30px, 0 10px; opacity: 0.5; }
-		100% { background-position: 0 15px, 15px 0, 0 -10px; opacity: 1; }
-	}
+        @keyframes artifact-scan {
+            0% { background-position: 0 0, 0 0, 0 0; opacity: 1; }
+            25% { background-position: 15px 0, 0 15px, 0 20px; opacity: 0.6; }
+            50% { background-position: -15px 15px, 15px -15px, 0 -40px; opacity: 0.9; }
+            75% { background-position: 30px -15px, -15px 30px, 0 10px; opacity: 0.5; }
+            100% { background-position: 0 15px, 15px 0, 0 -10px; opacity: 1; }
+        }
 
-	/* Applies the SVG displacement filter instead of skewing */
-	#crt-screen.blackwall-active {
-		animation: data-corruption 0.2s steps(2) infinite !important;
-		filter: url(#video-glitch) contrast(1.5) saturate(2);
-	}
-	
-	#crt-screen.blackwall-active,
-	#crt-screen.blackwall-active * {
-		color: #ff3333 !important;
-	}
+        #crt-screen.blackwall-active {
+            animation: data-corruption 0.2s steps(2) infinite !important;
+            filter: url(#video-glitch) contrast(1.5) saturate(2);
+        }
+        
+        #crt-screen.blackwall-active,
+        #crt-screen.blackwall-active * {
+            color: #ff3333 !important;
+        }
 
-	/* Sharp, blocky chromatic aberration */
-	@keyframes data-corruption {
-		0% { text-shadow: 4px 0px 0px #00ffff, -4px 0px 0px #ff0000; }
-		25% { text-shadow: -5px 2px 0px #00ffff, 5px -2px 0px #ff0000; }
-		50% { text-shadow: 3px -3px 0px #00ffff, -3px 3px 0px #ff0000; }
-		75% { text-shadow: -4px 0px 0px #00ffff, 4px 0px 0px #ff0000; }
-		100% { text-shadow: 2px 2px 0px #00ffff, -2px -2px 0px #ff0000; }
-	}
-		</style>
-	</head>
-	<body>
+        @keyframes data-corruption {
+            0% { text-shadow: 4px 0px 0px #00ffff, -4px 0px 0px #ff0000; }
+            25% { text-shadow: -5px 2px 0px #00ffff, 5px -2px 0px #ff0000; }
+            50% { text-shadow: 3px -3px 0px #00ffff, -3px 3px 0px #ff0000; }
+            75% { text-shadow: -4px 0px 0px #00ffff, 4px 0px 0px #ff0000; }
+            100% { text-shadow: 2px 2px 0px #00ffff, -2px -2px 0px #ff0000; }
+        }
+    </style>
+</head>
+<body>
 
-        <!-- SVG FILTER FOR VIDEO PIXELATION/ARTIFACTING -->
-        <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
-            <defs>
-                <filter id="video-glitch">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.8" numOctaves="1" result="noise" />
-                    <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 4 -1" in="noise" result="steppedNoise" />
-                    <feDisplacementMap in="SourceGraphic" in2="steppedNoise" scale="14" xChannelSelector="R" yChannelSelector="G" />
-                </filter>
-            </defs>
-        </sv[118;1:3ug>
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+        <defs>
+            <filter id="video-glitch">
+                <feTurbulence type="fractalNoise" baseFrequency="0.02 0.8" numOctaves="1" result="noise" />
+                <feColorMatrix type="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 4 -1" in="noise" result="steppedNoise" />
+                <feDisplacementMap in="SourceGraphic" in2="steppedNoise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
 
-		<div class="sca[118;1:3unlines"></div>
-		<div id="blackwall-overlay"></div>
+    <div class="scanlines"></div>
+    <div id="blackwall-overlay"></div>
 
-		<div id="main-container" class="flicker">
+    <div id="main-container" class="flicker">
+        <div id="crt-screen" onclick="document.getElementById('cmd-input').focus()">
+            <div id="terminal-output"></div>
+            <div id="input-line" class="hidden">
+                <span id="prompt">guest@portfolio:~$</span>
+                <input type="text" id="cmd-input" autocomplete="off" autofocus>
+            </div>
+        </div>
 
-			<div id="crt-screen" onclick="document.getElementById('cmd-input').focus()">
-				<div id="terminal-output"></div>
-				<div id="input-line" class="hidden">
-					<span id="prompt">guest@portfolio:~$</span>
-					<input type="text" id="cmd-input" autocomplete="off" autofocus>
-				</div>
-			</div>
+        <div id="modal-overlay">
+            <div id="modal-box">
+                <div class="modal-header" id="modal-title">TITLE</div>
+                <div class="modal-content" id="modal-body">Content goes here...</div>
+                <div class="modal-footer">-- PRESS ANY KEY TO CLOSE --</div>
+            </div>
+        </div>
+    </div>
 
-			<div id="modal-overlay">
-				<div id="modal-box">
-					<div class="modal-header" id="modal-title">TITLE</div>
-					<div class="modal-content" id="modal-body">Content goes here...</div>
-					<div class="modal-footer">-- PRESS ANY KEY TO CLOSE --</div>
-				</div>
-			</div>
-
-		</div>
-
-		<script>
-			// --- CONFIGURATION ---
-			const user = "Rommel John 'Mel' Ronduen";
-			const role = "Solutions Architect - NetSuite/AI Integration";
-
-			// ASCII Art
-			const banner = `
-  __  __ ______ _      ____ 
- |  \\/  | ____ | |   /  ____|
- | \\  / | |__  | |  |  (___  
- | |\\/| |  __| | |  \\____\\ 
+    <script>
+        const user = "Rommel John 'Mel' Ronduen";
+        const role = "Solutions Architect - NetSuite/AI Integration";
+        const banner = `
+  __  __ ______ _     ____ 
+ |  \/  | ____ | |   /  ____|
+ | \  / | |__  | |  |  (__  
+ | |\/| |  __| | |   \____\ 
  | |  | | |____| |____ ___) |
  |_|  |_|______|______|_____/ 
 
-      PORTFOLIO SYSTEM v2.0 
-      `;
+       PORTFOLIO SYSTEM v2.0 
+       `;
 
-			// Boot Text
-			const bootSequence = [
-				"Initializing Ronduen_Portfolio_Kernel v2026...",
-				"Loading modules: [NetSuite] [Salesforce] [Claude] [C/C++] [Python] [AWS] [Cisco] [GNU/Linux]@##!@...",
-				"Checking peripherals: MacBook Air detected...",
-				"Mounting file system: /home/mels...",
-				"---------------------------------------------------",
-				`User: ${user}`,
-				`Role: ${role}`,
-				"Status: HIRED [Appficiency Inc.]",
-				"Type 'help' to see available commands.",
-				"---------------------------------------------------",
-			];
+        const bootSequence = [
+            "Initializing Ronduen_Portfolio_Kernel v2026...",
+            "Loading modules: [NetSuite] [Salesforce] [Claude] [C/C++] [Python] [AWS] [Cisco] [GNU/Linux]...",
+            "Checking peripherals: MacBook Air detected...",
+            "Mounting file system: /home/mels...",
+            "---------------------------------------------------",
+            `User: ${user}`,
+            `Role: ${role}`,
+            "Status: HIRED [Appficiency Inc.]",
+            "Type 'help' to see available commands.",
+            "---------------------------------------------------",
+        ];
 
-			// --- FILE SYSTEM DATA ---
-			const fileSystem = {
-				about: {
-					title: "README.md",
-					content: `NAME: Rommel John Ronduen (Mels)\nEDUCATION: BS Computer Engineering (spec. Cybersecurity), Mapua University (2022-2026)\n\nFOCUS:\n > ERP solution architecting (NetSuite)\n > REST/SOAP API integrations\n > MCP connectors\n > Linux System Administration\n > System/Server/API Design\n\nHOBBIES:\n > I play a lot of retro games from the PS1/PS2/XBox era.\n > I brew coffee using the pour-over technique for people and myself (I am a coffee lover).\n > I absolutely LOVE walking around and exploring nature.\n\nTECH I USE:\n > i use neovim on a terminal emulator with a comic sans font\n > arch user since 2022, macOS/fedora for occasional work or server dev\n > sometimes i use my steam deck as a testing environment\n\nPROFILE:\nJr. Solutions Architect at Appficiency Inc. focusing on architecting tailored NetSuite solutions and performing R&D on integrations\n\nDemonstrated learning agility through international research (Taiwan CYCU), IEEE publications, and ICpEP competitions.\n\nHOW I STARTED:\nSince my youth, I have curated a passion for demonstrating the promises of technology. My first programming experience was in 2012 when I learned how to program in Lua for creating Garry's Mod addons and Roblox gameplay scripts.\n\nIn 9th grade, I excelled as the top of my class for Java. Fast forward to undergraduate studies, I pursued a degree in Computer Engineering that provided me the learning resources to build key skills in the field.\n`
-				},
+        const fileSystem = {
+            about: {
+                title: "README.md",
+                content: `NAME: Rommel John Ronduen (Mels)\nEDUCATION: BS Computer Engineering (spec. Cybersecurity), Mapua University (2022-2026)\n\nFOCUS:\n > ERP solution architecting (NetSuite)\n > REST/SOAP API integrations\n > MCP connectors\n > Linux System Administration\n > System/Server/API Design\n\nHOBBIES:\n > I play a lot of retro games from the PS1/PS2/XBox era.\n > I brew coffee using the pour-over technique.\n > I love exploring nature.\n\nTECH I USE:\n > neovim, arch, macOS/fedora\n > steam deck for testing\n\nPROFILE:\nJr. Solutions Architect at Appficiency Inc.`
+            },
+            skills: {
+                title: "skills.conf",
+                content: `SOLUTION ARCHITECTING:\n- Client Discovery\n- Requirements Gathering\n\nNETSUITE:\n- Suitelet Development\n- Agentic AI (MCP Connectors)\n\nINFRASTRUCTURE:\n- GNU/Linux (Debian/RHEL/Arch)\n- AWS (EC2, S3, VPC)\n- Network Design (VLANs, Routing)`
+            },
+            contact: {
+                title: "contact_info.txt",
+                content: `Email: rommel.ronduen2244@gmail.com\nLinkedIn: linkedin.com/in/melskie\nPhone: +63 962 986 4843`
+            },
+            projects: {
+                type: 'folder',
+                intro: "Engineering Portfolio.",
+                list: "1. Auto Question Generation\n2. Cafe Embedded System\n3. Boss_Sensor\n4. Intelligent Seek\n5. Otter Protocol",
+                items: {
+                    "1": { title: "auto_q_gen.cpp", content: "Thesis: Quiz generation from handwritten notes using TrOCR and T5." },
+                    "2": { title: "cafe_embedded.c", content: "ATmega328P-based cafe ordering interface." },
+                    "3": { title: "boss_sensor.sh", content: "Computer vision for face detection on Raspberry Pi." },
+                    "4": { title: "intelligent_seek.py", content: "Video lecture transcription and quiz generation." },
+                    "5": { title: "otter_protocol.c", content: "TCP client/server protocol from scratch in C." }
+                }
+            }
+        };
 
-				skills: {
-					title: "skills.conf",
-					content: `SOLUTION ARCHITECTING:\n- Client Discovery\n- Requirements Gathering and Anchoring\n- Solution Leveling and Scoping\n AI Enablement and Upskilling\n\nNETSUITE ADMIN & DEVELOPMENT:\n- Suitelet Development\n- Agentic AI (MCP Connectors)\n- Inventory Management and Item Costing\n AR/AP aging on Claude MCP\n\nINFRASTRUCTURE & OS:\n- GNU/Linux (Debian/RHEL/Arch): Package Management, Process Monitoring, User Management and Privileges, Process Management, Network Configuration, BASH Scripting, Log Management\n- Amazon Web Services (EC2, S3, VPC, IAM)\n- Network Design and Management (Network Housekeeping, RADIUS/TACACS Logging/Monitoring, IGP Routing, Static Routing, VLANs, ACLs, Switch Security, Virtual Private Cloud, SDN)\n\nSOFTWARE & AI:\n- C/C++ (Data Serialization, Data Hashing, RSA Encryption, Network Sockets, CMake, GTest)\n- Python (Tkinter, OpenCV, Matplotlib, Seaborn, YOLO, Pandas, PyTorch, PyTest)\n- Java (Spring Boot, Maven)\n- JavaScript/TypeScript (with Angular front-end)\n- RDBMS (MySQL, Amazon S3)\n- SQL-less (MongoDB, Firebase)\n- AI/ML (OpenVINO, Hugging Face, TensorFlow, PyTorch, YOLO, Google Vertex AI)\n\nHARDWARE:\n- Raspberry Pi / ESP32 / ATmega328P\n- PCB Design (KiCAD, Proteus)\n- Schematic Drafting and Simulation (Proteus)\n`
-				},
+        let currentDirectory = null;
+        let isModalOpen = false;
+        let isGlitching = false;
 
-				contact: {
-					title: "contact_info.txt",
-					content: `Email: rommel.ronduen2244@gmail.com\nLinkedIn: linkedin.com/in/melskie\nPhone: +63 962 986 4843`
-				},
+        const outputDiv = document.getElementById('terminal-output');
+        const inputLine = document.getElementById('input-line');
+        const inputField = document.getElementById('cmd-input');
+        const promptSpan = document.getElementById('prompt');
+        const crtScreen = document.getElementById('crt-screen');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
 
-				projects: {
-					type: 'folder',
-					intro: "Engineering Portfolio.",
-					list: "1. Automatic Question Generation (undergrad thesis)\n2. Client-Based Embedded System (undergrad capstone)\n3. Boss_Sensor (taiwan camp project)\n4. Intelligent Seek (intel x asus competition)\n5. Otter Protocol (network dev)",
-					items: {
-						"1": { title: "auto_q_gen.cpp", content: `PROJECT: Automatic Question Generation (Undergraduate Research)\n------------------------------------------------\n> "Automatic Question Generation from Handwritten Lecture Notes Using TrOCR Text Recognition and T5 Language Processing"\n> Tech: TrOCR, T5, Raspberry Pi 5, Python, PyTorch, Angular/Flask.\n> Award: People's Choice & 1st Runner Up (Best Presenter)\n> Source: 10.1109/ICCAE64891.2025.10980579\n\nWHAT I LEARNED:\nResearch writing (LaTeX), documentations, Python AI/ML development, optical character recognition, Angular front-end development, edge device deployment (Raspberry Pi), Linux BASH scripting and crontab scheduling (debian), project presentation\n\nDESCRIPTION:\nMy undergraduate thesis revolves around the premise of generating quiz materials out of handwritten notes of students. It serves as one of the solutions to the Philippines' problem of primary and secondary school students not having access to learning materials.\n\nThe device consists of a hollow wooden box with internal lighting that takes in letter-sized plainsheetpaper that contains the handwritten notes that are captured with an internal web camera. Provided on the front of the device is a 7-inch touchscreen display that shows the system's user interface. The user interface shows a live camera feed for the positioning of the paper, and controls for performing text extraction and processing.\n\nHOW IT WORKS:\n+-------------------+      +-------------------+      +-----------------+\n| Image acquisition | ---> |  Text extraction  | ---> | Quiz Generation |\n|     (OpenCV)      |      | (Microsoft TrOCR) |      |   (Google T5)   |\n+-------------------+      +-------------------+      +-----------------+\n\nThe system consists of three processing stages. The first stage (image acquisition) involves the image capture and conditioning of the handwritten notes in preparation for text extraction. The second stage involves the use of Microsoft's TrOCR model for extracting keywords. The last stage of processing involves the indexing of keywords that will be used for prompts to be fed into Google's Text-to-Text transformer (T5) that generates the quiz questions which are formatted into a PDF.\n\nWith regards to quiz generation, the T5 model used was fine-tuned to the Stanford Question-Answering Database (SQuAD) to generate questions from a prompt that utilizes a keyword and the original text.\n` },
+        async function boot() {
+            const pre = document.createElement('pre');
+            pre.className = "ascii-art";
+            pre.textContent = banner;
+            outputDiv.appendChild(pre);
+            for (let line of bootSequence) await typeLine(line, 10);
+            inputLine.classList.remove('hidden');
+            inputField.focus();
+        }
 
-						"2": { title: "cafe_embedded.c", content: `PROJECT: Client-Based Embedded System Design\n------------------------------------------------\n> "ATmega328P-based Cafe Ordering Interface With Stock and Beverage Monitoring"\n> Tech: ATmega328P, PlatformIO, C++, KiCAD, 74xx Logic ICs, Switched-Mode Power Supplies\n\nWHAT I LEARNED:\nClient needs analysis, soldering, digital signal conditioning, I2C communication, C++ data structures, EEPROM reading/writing, PCB design/manufacturing\n\nDESCRIPTION:\nThis is an embedded system meant for an owner of a small milk tea shop. Involves system design and implementation (PCB design) of kiosk-like ordering interface connected to an owner-facing interface that tracks pending orders while also providing insights for the remaining ingredients and drinks that can be made.\n\nHOW IT WORKS:\n+------------------+      +----------------------+      +---------------+\n|                  |---->|ORDER STRUCTURING UNIT|<--->|OWNER INTERFACE|\n|                  |      +----------------------+      +---------------+\n|                  |                |\n|CUSTOMER INTERFACE|                |\n|                  |                |\n|                  |                V\n|                  |      +-----------------------+\n|                  |<----|MENU DISPLAY INDICATORS|\n+------------------+      +-----------------------+\n\nTHE ORDER BITSTRING:\nThe scope of this project covers milk tea beverages that consist of the following parameters:\n> Size (small or medium)\n> Add-on (4 types)\n> Amount (1-9)\n> Flavor (11 flavors)\n\nBased on the number of possibilities per parameter, we constructed the order bitstring:\n+----------+---------------+--------------------+--------------+\n|   Size   |    Add-ons    |       Amount       |    Flavor    |\n|  (1 bit) |    (2 bits)   |      (4 bits)      |   (2 bits)   |\n+----------+---------------+--------------------+--------------+\n\nCUSTOMER INTERFACE:\nEach of the parameter values in the bitstring are mapped to a specific type. The order bitstring parameters are controlled by the customer through the customer interface. The customer interface consists of a 11-button keypad that allows for the selection of the flavor. Provided too are the up/down controls for selecting or cycling through the possible add-ons, size, and amount.\n\nMENU DISPLAY INDICATORS:\nHow can the customer keep track of the parameters that they chosen on the customer interface? To solve this problem, we provided individual LEDs and a single 7-segment digit display (amount) for showing the choices they selected on the interface. This subsystem is simply a combinational circuit that uses the parameters chosen by the user from the customer interface and lights a specific LED for their choice. This was done via a design of an 8-to-11 decoder and a couple of 2-to-4 decoders.\n\nORDER STRUCTURING UNIT:\nFor grouping the order information into the bitstring we have defined, the order structuring unit collects the data from the customer interface, buffers it, and structures the order bitstring in two 8-bit parallel-in serial-out (PISO) Motorola 74LS166 shift registers. For sending the order to the owner interface for parsing, inventory logistics, and tracking, we transferred the bitstring serially where the clock input was derived from the ATmega328P using one of the digital I/O pins.\n\nCUSTOMER INTERFACE:\nThe customer interface houses the ATmega328P. Provided also are two 20 column by 4 row LCDs that show the pending orders in one LCD, and the ingredient stocks available on the other. The customer can choose to acknowledge or deny the order provided by the customer. They can also see how many drinks they can make for the specific order based on the flavor and size.\n\nThe ingredient stocks are stored in the EEPROM, so hard resets do not wipe the stock. The system has a real-time clock module that resets the ingredients to default every Sunday 12:00AM. This matched the actual behavior of the client when restocking.` },
+        function typeLine(text, speed = 20) {
+            return new Promise(resolve => {
+                const p = document.createElement('div');
+                p.className = 'output-block';
+                outputDiv.appendChild(p);
+                let i = 0;
+                const interval = setInterval(() => {
+                    p.textContent += text.charAt(i);
+                    i++;
+                    if (i > text.length - 1) {
+                        clearInterval(interval);
+                        crtScreen.scrollTop = crtScreen.scrollHeight;
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
 
-						"3": { title: "boss_sensor.sh", content: `PROJECT:\nBoss_Sensor\n------------------------------------------------\n> Tech: TensorFlow, Keras, BASH, Raspberry Pi 3\n> Award: Silver Project Awardee\n> Source: github.com/rtcapoquian/ABOSS-SENSOR-2\n\nWHAT I LEARNED:\nMulticutural collaboration, BASH scripting, support-vector machines (SVMs), histogram of gradients (HOGs), Raspberry Pi 3\n\nDESCRIPTION:\nDesign and implementation of a computer vision system to detect specific persons and execute local BASH scripts upon detection. In this case, we demonstrated this capability of recognizing faces and executing local scripts through the detection of a person or a "boss", hence the name "Boss Sensor".\n\nUnique about this project was not the technology used, but the experience in collaborating with Taiwanese students. I realized that they are the type of people that listen more than they speak. They tend to remain silent until you initiate a conversation or a motion. It is only when you begin to initiate that they will decide to move further with your decision or to suggest an alternative.\n\nHOW IT WORKS:\nAnother interesting aspect to note is how clever the execution is for this project. We were only limited to the Raspberry Pi 3 that had limited resources and found difficulty in running standard neural networks. The project lead, Reji Capoquian, my colleague and now a DevOps engineer, spearheaded an approach that utilized only a traditional machine learning approach instead of a deep learning pathway that involved convolutional neural networks. We utilized a histogram of gradients (HOGs) that provided feature extraction from the individual frames. The classification was then done using a support-vector machine (SVM) algorithm.` },
+        function openModal(dataItem) {
+            isModalOpen = true;
+            modalTitle.textContent = dataItem.title || "DETAILS";
+            modalBody.textContent = dataItem.content;
+            modalOverlay.style.display = 'flex'; 
+        }
 
-						"4": { title: "intelligent_seek.py", content: `PROJECT: Intelligent Seek (Intel x ASUS Competition)\n------------------------------------------------\n> Tech: OpenVINO, Whisper, TrOCR.\n> Awards: Honorable Mention\n\nDESCRIPTION:\nVideo lecture transcription & quiz generation. First personal introduction to neural network optimization. Applied REST API design principles.` },
+        function closeModal() {
+            if (!isModalOpen) return;
+            isModalOpen = false;
+            modalOverlay.style.display = 'none'; 
+            inputField.focus();
+            if (currentDirectory && fileSystem[currentDirectory]) {
+                printOutput(`\n[Returned from view]`, "");
+                printOutput(fileSystem[currentDirectory].list, "[Type number to view details, or 'back' to return]");
+            }
+        }
 
-						"5": { title: "otter_protocol.c", content: `PROJECT: Otter Protocol (Personal)\n------------------------------------------------\n> TCP client/server protocol from scratch.\n> Written in C (1999 standard) with only standard socket libraries.\n> I intend this project to be open-source\n> Source: github.com/rommelskii/otter\n\nWHAT I LEARNED:\nTCP/IP socket programming, unit testing, data serialization/deserialization, memory allocation safety, and basic public-key cryptography.\n\nDESCRIPTION:\nThis project involves the design and implementation of a protocol between a client and server for authenticating users via usernames and passwords that are cross-checked with the serverside database.\n\nHOW IT WORKS:\nThis protocol revolves around an 'Otter server' or 'otserver', and one or more 'Otter clients' or 'otclient'. An otclient may refer to any service that utilizes the Otter Protocol API for constructing packets to be sent to the otserver for authenticating user details. On the other hand, an otserver has access to a database of existing credentials that is used for authenticating inbound usernames and passwords in the form of a hash digest.\n\nOtter servers have access to username-password combinations in an 'Otter file' or 'otfile' for short. Each otfile entry is tokenized and converted into a salted hash digest. Collectively, the otfile is transformed into memory as a hash table for authentication. For an otclient to authenticate user details with a known otserver database, they must first tether to the otserver via TREQ/TACK handshake. Otclients send a tether request (TREQ) packet to the otserver to initialize tethering. If an otserver accepts the otclient, it replies with a tether acknowledge (TACK)\n\nUser authentication in this protocol is just the lookup of an inbound hash digest in the existing server database. If a user exists, the server sends a credential valid (CVAL) back to the client that it exists. Otherwise, it sends a credential invalid (CINV) reply back to the server. The protocol suite can be extended to involve user authorization by adding extra details alongside the user credentials that define the privileges of a user.\n` }
-					}
-				},
+        function printOutput(text, footer = "") {
+            const div = document.createElement('div');
+            div.className = 'output-block command-output';
+            div.innerText = text;
+            if (footer) div.innerHTML += `<br><br><span style="color:#666;">${footer}</span>`;
+            outputDiv.appendChild(div);
+            crtScreen.scrollTop = crtScreen.scrollHeight;
+        }
 
-				exp: {
-					type: 'folder',
-					intro: "Experience Log.",
-					list: "1. CYCU Summer Camp (Taiwan)\n2. ICpEP.se Mapua Chapter\n3. Google Developer Group Manila",
-					items: {
-						"1": { title: "cycu_taiwan.log", content: `ROLE: Summer Camp Participant\nORG: CYCU SUMMER CAMP (Taiwan) | Jul 2025 - Aug 2025\n------------------------------------------------\n> Selected for academic excellence to learn emerging AI/Semicon tech in Taiwan.\n> Member of Computer Vision and Pattern Recognition team.\n> Developed 'BossSensor' project and won Silver Medal.` },
-						"2": { title: "icpep_officer.log", content: `ROLE: Internal Vice President\nORG: ICpEP.se MAPUA CHAPTER | Jun 2025 - Feb 2026\n------------------------------------------------\n> Handled pre-event and post-event analyses through labor division.\n> Managed logistics for the 57th EECE Research Colloquium.` },
-						"3": { title: "gdg_manila.log", content: `ROLE: Technical Associate for Events\nORG: GOOGLE DEVELOPER GROUP MANILA | Nov 2024 - Present\n------------------------------------------------\n> Livestream management and A/V production.\n> Provided technical support for Google Cloud Platform workshops.` }
-					}
-				},
+        function updatePrompt() {
+            promptSpan.innerText = currentDirectory ? `guest@portfolio:~/${currentDirectory}$` : `guest@portfolio:~$`;
+        }
 
-				certs: {
-					type: 'folder',
-					intro: "Certificates.",
-					list: "1. CCNA 200-301 (Packt)\n2. Red Hat System Admin (IBM)\n3. AWS Cloud Technical Essentials (Amazon)\n4. Ethical Hacker (Cisco)\n5. CCNA 1-4 (Cisco NetAcad)",
-					items: {
-						"1": { title: "ccna_packt.crt", content: `CERT: CCNA 200-301: Guide to Getting Certified\nISSUER: Packt\n------------------------------------------------\n> Focused on network engineering protocols and design.\n> Reinforced understanding of network design for specific use-cases (Enterprise & Security).` },
-						"2": { title: "rhel_admin.crt", content: `CERT: Red Hat Linux System Administration\nISSUER: IBM\n------------------------------------------------\n> First formal credential for Linux server administration.\n> Covered RHEL distribution, server management, and systemd.` },
-						"3": { title: "aws_cloud.crt", content: `CERT: AWS Cloud Technical Essentials\nISSUER: Amazon Web Services\n------------------------------------------------\n> Hands-on experience with EC2, IAM permissions, and S3/ECS/EKS storage architecture.` },
-						"4": { title: "ethical_hacker.crt", content: `CERT: Ethical Hacker\nISSUER: Cisco NetAcad\n------------------------------------------------\n> Hands-on experience with penetration testing, security auditing, and network security implementations.` },
-						"5": { title: "ccna_netacad.crt", content: `CERT: CCNA 1-4 (Cisco NetAcad)\nISSUER: Cisco Networking Academy / Mapua University\n------------------------------------------------\n> Completed as part of undergraduate coursework.\n> Hands-on laboratory exercises for handling switches and routers.\n> First exposure to computer networking.` }
-					}
-				}
-			};
+        function triggerBlackwall() {
+            if (isGlitching) return;
+            isGlitching = true;
+            crtScreen.classList.add('blackwall-active');
+            document.getElementById('blackwall-overlay').classList.add('active'); 
+            setTimeout(() => {
+                crtScreen.classList.remove('blackwall-active');
+                document.getElementById('blackwall-overlay').classList.remove('active');
+                isGlitching = false;
+                printOutput("[SYS_WARN] BREACH DETECTED. ICE RESTORED.", "");
+            }, 2500);
+        }
 
-			// --- STATE & DOM ---
-			let currentDirectory = null;
-			let isModalOpen = false;
-			let isGlitching = false;
+        document.addEventListener('keydown', (e) => {
+            if (isModalOpen) { closeModal(); e.preventDefault(); }
+        });
 
-			const outputDiv = document.getElementById('terminal-output');
-			const inputLine = document.getElementById('input-line');
-			const inputField = document.getElementById('cmd-input');
-			const promptSpan = document.getElementById('prompt');
-			const crtScreen = document.getElementById('crt-screen');
+        inputField.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const input = this.value.trim().toLowerCase();
+                if (input === 'clear') outputDiv.innerHTML = '';
+                else if (input === 'back') { currentDirectory = null; updatePrompt(); }
+                else if (fileSystem[input]) {
+                    if (fileSystem[input].type === 'folder') {
+                        currentDirectory = input;
+                        updatePrompt();
+                        printOutput(fileSystem[input].intro + "\n\n" + fileSystem[input].list);
+                    } else openModal(fileSystem[input]);
+                } else if (currentDirectory && fileSystem[currentDirectory].items[input]) {
+                    openModal(fileSystem[currentDirectory].items[input]);
+                } else {
+                    printOutput(`Command not found: ${input}`);
+                }
+                this.value = '';
+            }
+        });
 
-			// Modal Elements
-			const modalOverlay = document.getElementById('modal-overlay');
-			const modalTitle = document.getElementById('modal-title');
-			const modalBody = document.getElementById('modal-body');
-
-			// --- SYSTEM BOOT ---
-			async function boot() {
-				const pre = document.createElement('pre');
-				pre.className = "ascii-art";
-				pre.textContent = banner;
-				outputDiv.appendChild(pre);
-
-				for (let line of bootSequence) {
-					await typeLine(line, 10);
-				}
-				inputLine.classList.remove('hidden');
-				inputField.focus();
-			}
-
-			function typeLine(text, speed = 20) {
-				return new Promise(resolve => {
-					const p = document.createElement('div');
-					p.className = 'output-block';
-					outputDiv.appendChild(p);
-
-					let i = 0;
-					const interval = setInterval(() => {
-						p.textContent += text.charAt(i);
-						i++;
-						if (i > text.length - 1) {
-							clearInterval(interval);
-							window.scrollTo(0, document.body.scrollHeight);
-							resolve();
-						}
-					}, speed);
-				});
-			}
-
-			// --- MODAL LOGIC ---
-			function openModal(dataItem) {
-				isModalOpen = true;
-				modalTitle.textContent = dataItem.title || "DETAILS";
-				modalBody.textContent = dataItem.content;
-				modalOverlay.style.display = 'flex'; 
-			}
-
-			function closeModal() {
-				if (!isModalOpen) return;
-				isModalOpen = false;
-				modalOverlay.style.display = 'none'; 
-				inputField.focus();
-
-				if (currentDirectory && fileSystem[currentDirectory]) {
-					const dir = fileSystem[currentDirectory];
-					pr[27;1:3uintOutput(`\n[Returned from view]`, "");
-					printOutput(dir.list, "[Type number to view details, or 'back' to return]");
-				} else {
-					printOutput(`\n[Returned to shell]`, "");
-				}
-			}
-
-			// --- TERMINAL LOGIC ---
-			function printOutput(text, footer = "") {
-				const div = document.createElement('div');
-				div.className = 'output-block command-output';
-				div.innerText = text;
-				if (footer) div.innerHTML += `<br><br><span style="color:#666;">${footer}</span>`;
-				outputDiv.appendChild(div);
-
-				crtScreen.scrollTop = crtScreen.scrollHeight;
-			}
-
-			function updatePrompt() {
-				promptSpan.innerText = currentDirectory ? `guest@portfolio:~/${currentDirectory}$` : `guest@portfolio:~$`;
-			}
-
-			// --- GLITCH EFFECT ---
-			function triggerBlackwall() {
-				if (isGlitching) return;
-				isGlitching = true;
-				
-				const crt = document.getElementById('crt-screen');
-				const overlay = document.getElementById('blackwall-overlay');
-				
-				crt.classList.add('blackwall-active');
-				overlay.classList.add('active'); 
-
-				setTimeout(() => {
-					crt.classList.remove('blackwall-active');
-					overlay.classList.remove('active');
-					isGlitching = false;
-					printOutput("[SYS_WARN] BREACH DETECTED. ICE RESTORED.", "");
-					inputField.focus();
-				}, 2500);
-			}
-
-			// --- EVENT LISTENERS ---
-			document.addEventListener('keydown', function(e) {
-				if (isModalOpen) {
-					e.preventDefault();
-					e.stopPropagation();
-					closeModal();
-				}
-			});
-
-			modalOverlay.addEventListener('click', function() {
-				closeModal();
-			});
-
-			inputField.addEventListener('keydown', function(e) {
-				if (isModalOpen || isGlitching) {
-					e.preventDefault();
-					return;
-				}
-
-				if (e.key === 'Enter') {
-					e.stopPropagation(); 
-
-					const input = this.value.trim().toLowerCase();
-
-					const historyLine = document.createElement('div');
-					historyLine.innerHTML = `<span style="color:var(--term-green); margin-right:10px;">${promptSpan.innerText}</span> ${this.value}`;
-					outputDiv.appendChild(historyLine);
-
-					if (input === 'clear') {
-						outputDiv.innerHTML = '';
-					} 
-					else if (input === 'back' || input === 'exit') {
-						if (currentDirectory) {
-							currentDirectory = null;
-							updatePrompt();
-							printOutput("Returning to root...", "[Type 'help' for options]");
-						} 
-					}
-					else if (input === 'help') {
-						if (currentDirectory) {
-							printOutput(fileSystem[currentDirectory].list, "[Type 'back' to return to root]");
-						} else {
-							printOutput("Available commands:\n  [about]    - Profile & Bio\n  [skills]   - Tech Stack\n  [projects] - Portfolio (Dir)\n  [exp]      - Experience (Dir)\n  [certs]    - Certifications (Dir)\n  [contact]  - Contact Info");
-						}
-					}
-					else if (input === 'franxeen') {
-						printOutput("? so when are you coming back?");
-						triggerBlackwall();
-					} 
-					else if (input === 'soleil') {
-						printOutput("...");
-						triggerBlackwall();
-					} 
-					else if (input === 'karma') {
-						printOutput("you'll find me one day");
-						triggerBlackwall();
-					} 
-					else if (currentDirectory) {
-						const currentFolder = fileSystem[currentDirectory];
-						if (currentFolder.items[input]) {
-							openModal(currentFolder.items[input]);
-						} else {
-							printOutput(`Invalid option. Type a number.\n\n${currentFolder.list}`, "[Type 'back' to return]");
-						}
-					}
-					else {
-						if (fileSystem[input]) {
-							const result = fileSystem[input];
-							if (result.type === 'folder') {
-								currentDirectory = input;
-								updatePrompt();
-								printOutput(result.intro + "\n\n" + result.list, "[Type number to view details]");
-							} else {
-								openModal(result);
-							}
-						} else if (input !== '') {
-							printOutput(`Command not found: ${input}.`);
-						}
-					}
-
-					this.value = '';
-					crtScreen.scrollTop = crtScreen.scrollHeight;
-				}
-
-				if (e.key === 'Tab') {
-					e.preventDefault();
-					if (!currentDirectory) {
-						const matches = Object.keys(fileSystem).filter(c => c.startsWith(this.value));
-						if (matches.length === 1) this.value = matches[0];
-					}
-				}
-			});
-
-			window.onload = boot;
-		</script>
-	</body>
+        document.addEventListener('DOMContentLoaded', boot);
+    </script>
+</body>
 </html>
