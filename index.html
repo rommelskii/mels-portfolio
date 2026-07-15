@@ -36,7 +36,7 @@
 	#crt-screen {
 		width: 100%;
 		height: 100%;
-		padding[118;1:3u: 2rem;
+		padding: 2rem;
 		box-sizing: border-box;
 		overflow-y: auto;
 		text-shadow: 0 0 4px var(--term-dim);
@@ -152,44 +152,40 @@
 		box-shadow: inset 0 0 150px rgba(255, 0, 0, 0.9);
 		z-index: 2000;
 		pointer-events: none;
-		mix-blend-mode: color-burn;
 	}
 
-	.blackwall-active {
-		animation: blackwall-jitter 0.1s infinite !important;
-		color: #ff3333 !important;
+	/* Apply the animation ONLY to the CRT screen content, not the body */
+	#crt-screen.blackwall-active {
+		animation: blackwall-jitter 0.1s infinite, blackwall-tear 0.15s infinite alternate !important;
 	}
 	
-	.blackwall-active * {
+	/* Recolor all text inside the screen during the glitch */
+	#crt-screen.blackwall-active,
+	#crt-screen.blackwall-active * {
 		color: #ff3333 !important;
 		text-shadow: 2px 0 red, -2px 0 darkred !important;
-		border-color: #ff3333 !important;
-	}
-
-	.blackwall-active #crt-screen {
-		animation: blackwall-tear 0.15s infinite alternate;
 	}
 
 	@keyframes blackwall-jitter {
 		0% { transform: translate(2px, 1px) rotate(0deg); }
 		10% { transform: translate(-1px, -3px) rotate(-1deg); }
-		20% { transform: translate(-3px, 0px) rotate(1deg); filter: invert(10%); }
+		20% { transform: translate(-3px, 0px) rotate(1deg); }
 		30% { transform: translate(0px, 2px) rotate(0deg); }
 		40% { transform: translate(1px, -1px) rotate(1deg); }
-		50% { transform: translate(-1px, 2px) rotate(-1deg); filter: invert(0%); }
+		50% { transform: translate(-1px, 2px) ro[118;1:3utate(-1deg); }
 		60% { transform: translate(-3px, 1px) rotate(0deg); }
 		70% { transform: translate(2px, 1px) rotate(-1deg); }
 		80% { transform: translate(-1px, -1px) rotate(1deg); }
-		90% { transform: translate(3px, 2px) rotate(0deg); filter: invert(20%); }
+		90% { transform: translate(3px, 2px) rotate(0deg); }
 		100% { transform: translate(1px, -2px) rotate(-1deg); }
 	}
 
 	@keyframes blackwall-tear {
-		0% { clip-path: inset(10% 0 80% 0); transform: skewX(10deg); }
-		20% { clip-path: inset(80% 0 5% 0); transform: skewX(-20deg); }
-		40% { clip-path: inset(30% 0 50% 0); transform: skewX(5deg); }
-		60% { clip-path: inset(5% 0 90% 0); transform: skewX(-10deg); }
-		80% { clip-path: inset(60% 0 20% 0); transform: skewX(15deg); }
+		0% { clip-path: inset(10% 0 80% 0); transform: skewX(5deg); }
+		20% { clip-path: inset(80% 0 5% 0); transform: skewX(-10deg); }
+		40% { clip-path: inset(30% 0 50% 0); transform: skewX(2deg); }
+		60% { clip-path: inset(5% 0 90% 0); transform: skewX(-5deg); }
+		80% { clip-path: inset(60% 0 20% 0); transform: skewX(10deg); }
 		100% { clip-path: inset(20% 0 60% 0); transform: skewX(0deg); }
 	}
 		</style>
@@ -325,6 +321,7 @@ PROJECT: Otter Protocol (Personal)\n--------------------------------------------
 			// --- STATE & DOM ---
 			let currentDirectory = null;
 			let isModalOpen = false;
+			let isGlitching = false; // Prevents input without modifying the DOM element
 
 			const outputDiv = document.getElementById('terminal-output');
 			const inputLine = document.getElementById('input-line');
@@ -411,23 +408,23 @@ PROJECT: Otter Protocol (Personal)\n--------------------------------------------
 
 			// --- GLITCH EFFECT ---
 			function triggerBlackwall() {
-				const body = document.body;
+				if (isGlitching) return;
+				isGlitching = true;
+				
+				const crt = document.getElementById('crt-screen');
 				const overlay = document.getElementById('blackwall-overlay');
 				
-				// Apply glitch classes
-				body.classList.add('blackwall-active');
+				// Apply glitch classes strictly to the CRT screen layer
+				crt.classList.add('blackwall-active');
 				overlay.style.display = 'block';
-
-				// Disable input during the glitch
-				inputField.disabled = true;
 
 				// Remove glitch after 2.5 seconds
 				setTimeout(() => {
-					body.classList.remove('blackwall-active');
+					crt.classList.remove('blackwall-active');
 					overlay.style.display = 'none';
-					inputField.disabled = false;
-					inputField.focus();
+					isGlitching = false;
 					printOutput("[SYS_WARN] BREACH DETECTED. ICE RESTORED.", "");
+					inputField.focus();
 				}, 2500);
 			}
 
@@ -449,10 +446,14 @@ PROJECT: Otter Protocol (Personal)\n--------------------------------------------
 
 			// 2. Terminal Input Listener
 			inputField.addEventListener('keydown', function(e) {
-				if (isModalOpen) return; // Ignore input if in modal
+				// Prevent typing/commands during modal or glitch
+				if (isModalOpen || isGlitching) {
+					e.preventDefault();
+					return;
+				}
 
 				if (e.key === 'Enter') {
-					e.stopPropagation(); // <--- CRITICAL FIX: Stops bubble up to global listener
+					e.stopPropagation(); // Stops bubble up to global listener
 
 					const input = this.value.trim().toLowerCase();
 
@@ -481,7 +482,7 @@ PROJECT: Otter Protocol (Personal)\n--------------------------------------------
 					}
 
 					// ?
-					else if (input ==[27;1:3u= 'franxeen') {
+					else if (input === 'franxeen') {
 						printOutput("? so when are you coming back?");
 						triggerBlackwall();
 					} 
