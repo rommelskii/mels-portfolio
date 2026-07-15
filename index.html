@@ -131,7 +131,7 @@
 	}
 	.flicker { animation: flicker 0.15s infinite; }
 	@keyframes flicker {
-		0% { opacit[118;1:3uy: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
+		0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.9; }
 		15% { opacity: 0.95; } 20% { opacity: 0.99; } 50% { opacity: 0.95; }
 		100% { opacity: 0.98; }
 	}
@@ -149,18 +149,11 @@
 		position: fixed;
 		top: 0; left: 0; bottom: 0; right: 0;
 		box-shadow: inset 0 0 120px rgba(255, 0, 0, 0.9);
-		/* Creates blocky, corrupted scanlines */
-		background: repeating-linear-gradient(
-			0deg,
-			transparent,
-			transparent 10px,
-			rgba(255, 0, 0, 0.3) 12px,
-			rgba(255, 0, 0, 0.1) 15px,
-			transparent 16px,
-			transparent 30px,
-			rgba(255, 50, 50, 0.4) 32px,
-			transparent 35px
-		);
+		/* Creates a chunky, pixelated video macroblock grid */
+		background: 
+			repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
+			repeating-linear-gradient(0deg, transparent, transparent 15px, rgba(255, 0, 0, 0.15) 15px, rgba(255, 0, 0, 0.15) 30px),
+			repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255, 0, 0, 0.4) 12px, transparent 16px);
 		z-index: 2000;
 		pointer-events: none;
 		mix-blend-mode: color-dodge;
@@ -168,20 +161,22 @@
 
 	#blackwall-overlay.active {
 		display: block;
-		animation: artifact-scan 0.1s steps(3) infinite;
+		animation: artifact-scan 0.15s steps(2) infinite;
 	}
 
-	/* Moves the blocky gradient erratically */
+	/* Jumps the pixel grid around erratically */
 	@keyframes artifact-scan {
-		0% { background-position: 0 0; opacity: 1; }
-		33% { background-position: 0 20px; opacity: 0.6; }
-		66% { background-position: 0 -40px; opacity: 0.9; }
-		100% { background-position: 0 10px; opacity: 0.5; }
+		0% { background-position: 0 0, 0 0, 0 0; opacity: 1; }
+		25% { background-position: 15px 0, 0 15px, 0 20px; opacity: 0.6; }
+		50% { background-position: -15px 15px, 15px -15px, 0 -40px; opacity: 0.9; }
+		75% { background-position: 30px -15px, -15px 30px, 0 10px; opacity: 0.5; }
+		100% { background-position: 0 15px, 15px 0, 0 -10px; opacity: 1; }
 	}
 
-	/* Chromatic Aberration & Data Corruption on text */
+	/* Applies the SVG displacement filter instead of skewing */
 	#crt-screen.blackwall-active {
-		animation: data-corruption 0.15s infinite !important;
+		animation: data-corruption 0.2s steps(2) infinite !important;
+		filter: url(#video-glitch) contrast(1.5) saturate(2);
 	}
 	
 	#crt-screen.blackwall-active,
@@ -189,37 +184,28 @@
 		color: #ff3333 !important;
 	}
 
-	/* Swaps red/cyan channels erratically and blurs to simulate signal loss */
+	/* Sharp, blocky chromatic aberration */
 	@keyframes data-corruption {
-		0% { 
-			text-shadow: 3px 0px 0px #00ffff, -3px 0px 0px #ff0000; 
-			filter: blur(0px) contrast(1.2); 
-			transform: skewX(0deg); 
-		}
-		25% { 
-			text-shadow: -4px 1px 0px #00ffff, 4px -1px 0px #ff0000; 
-			filter: blur(1px) contrast(1.5); 
-			transform: skewX(-2deg); 
-		}
-		50% { 
-			text-shadow: 2px -1px 0px #00ffff, -2px 1px 0px #ff0000; 
-			filter: blur(0px) contrast(1); 
-			transform: skewX(1deg); 
-		}
-		75% { 
-			text-shadow: -3px 0px 0px #00ffff, 3px 0px 0px #ff0000; 
-			filter: blur(2px) contrast(1.8); 
-			transform: skewX(3deg); 
-		}
-		100% { 
-			text-shadow: 1px 1px 0px #00ffff, -1px -1px 0px #ff0000; 
-			filter: blur(0px) contrast(1.1); 
-			transform: skewX(-1deg); 
-		}
+		0% { text-shadow: 4px 0px 0px #00ffff, -4px 0px 0px #ff0000; }
+		25% { text-shadow: -5px 2px 0px #00ffff, 5px -2px 0px #ff0000; }
+		50% { text-shadow: 3px -3px 0px #00ffff, -3px 3px 0px #ff0000; }
+		75% { text-shadow: -4px 0px 0px #00ffff, 4px 0px 0px #ff0000; }
+		100% { text-shadow: 2px 2px 0px #00ffff, -2px -2px 0px #ff0000; }
 	}
 		</style>
 	</head>
 	<body>
+
+        <!-- SVG FILTER FOR VIDEO PIXELATION/ARTIFACTING -->
+        <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+            <defs>
+                <filter id="video-glitch">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.02 0.8" numOctaves="1" result="noise" />
+                    <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 4 -1" in="noise" result="steppedNoise" />
+                    <feDisplacementMap in="SourceGraphic" in2="steppedNoise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+            </defs>
+        </sv[118;1:3ug>
 
 		<div class="scanlines"></div>
 		<div id="blackwall-overlay"></div>
@@ -252,13 +238,13 @@
 			// ASCII Art
 			const banner = `
   __  __ ______ _     _____ 
- |  \\/  |  ____| |   / ____|
+ |  \\/  | ____| |   / ____|
  | \\  / | |__  | |  | (___  
  | |\\/| |  __| | |   \\___ \\ 
  | |  | | |____| |____ ____) |
  |_|  |_|______|______|_____/ 
 
-     PORTFOLIO SYSTEM v2.0 
+      PORTFOLIO SYSTEM v2.0 
       `;
 
 			// Boot Text
@@ -299,7 +285,7 @@
 					items: {
 						"1": { title: "auto_q_gen.cpp", content: `PROJECT: Automatic Question Generation (Undergraduate Research)\n------------------------------------------------\n> "Automatic Question Generation from Handwritten Lecture Notes Using TrOCR Text Recognition and T5 Language Processing"\n> Tech: TrOCR, T5, Raspberry Pi 5, Python, PyTorch, Angular/Flask.\n> Award: People's Choice & 1st Runner Up (Best Presenter)\n> Source: 10.1109/ICCAE64891.2025.10980579\n\nWHAT I LEARNED:\nResearch writing (LaTeX), documentations, Python AI/ML development, optical character recognition, Angular front-end development, edge device deployment (Raspberry Pi), Linux BASH scripting and crontab scheduling (debian), project presentation\n\nDESCRIPTION:\nMy undergraduate thesis revolves around the premise of generating quiz materials out of handwritten notes of students. It serves as one of the solutions to the Philippines' problem of primary and secondary school students not having access to learning materials.\n\nThe device consists of a hollow wooden box with internal lighting that takes in letter-sized plainsheetpaper that contains the handwritten notes that are captured with an internal web camera. Provided on the front of the device is a 7-inch touchscreen display that shows the system's user interface. The user interface shows a live camera feed for the positioning of the paper, and controls for performing text extraction and processing.\n\nHOW IT WORKS:\n+-------------------+      +-------------------+      +-----------------+\n| Image acquisition | ---> |  Text extraction  | ---> | Quiz Generation |\n|     (OpenCV)      |      | (Microsoft TrOCR) |      |   (Google T5)   |\n+-------------------+      +-------------------+      +-----------------+\n\nThe system consists of three processing stages. The first stage (image acquisition) involves the image capture and conditioning of the handwritten notes in preparation for text extraction. The second stage involves the use of Microsoft's TrOCR model for extracting keywords. The last stage of processing involves the indexing of keywords that will be used for prompts to be fed into Google's Text-to-Text transformer (T5) that generates the quiz questions which are formatted into a PDF.\n\nWith regards to quiz generation, the T5 model used was fine-tuned to the Stanford Question-Answering Database (SQuAD) to generate questions from a prompt that utilizes a keyword and the original text.\n` },
 
-						"2": { title: "cafe_embedded.c", content: `PROJECT: Client-Based Embedded System Design\n------------------------------------------------\n> "ATmega328P-based Cafe Ordering Interface With Stock and Beverage Monitoring"\n> Tech: ATmega328P, PlatformIO, C++, KiCAD, 74xx Logic ICs, Switched-Mode Power Supplies\n\nWHAT I LEARNED:\nClient needs analysis, soldering, digital signal conditioning, I2C communication, C++ data structures, EEPROM reading/writing, PCB design/manufacturing\n\nDESCRIPTION:\nThis is an embedded system meant for an owner of a small milk tea shop. Involves system design and implementation (PCB design) of kiosk-like ordering interface connected to an owner-facing interface that tracks pending orders while also providing insights for the remaining ingredients and drinks that can be made.\n\nHOW IT WORKS:\n+------------------+     +----------------------+     +---------------+\n|                  |---->|ORDER STRUCTURING UNIT|<--->|OWNER INTERFACE|\n|                  |     +----------------------+     +---------------+\n|                  |                 |\n|CUSTOMER INTERFACE|                 |\n|                  |                 |\n|                  |                 V\n|                  |     +-----------------------+\n|                  |<----|MENU DISPLAY INDICATORS|\n+------------------+     +-----------------------+\n\nTHE ORDER BITSTRING:\nThe scope of this project covers milk tea beverages that consist of the following parameters:\n> Size (small or medium)\n> Add-on (4 types)\n> Amount (1-9)\n> Flavor (11 flavors)\n\nBased on the number of possibilities per parameter, we constructed the order bitstring:\n+----------+---------------+--------------------+--------------+\n|   Size   |    Add-ons    |        Amount      |    Flavor    |\n|  (1 bit) |    (2 bits)   |      (4 bits)      |   (2 bits)   |\n+----------+---------------+--------------------+--------------+\n\nCUSTOMER INTERFACE:\nEach of the parameter values in the bitstring are mapped to a specific type. The order bitstring parameters are controlled by the customer through the customer interface. The customer interface consists of a 11-button keypad that allows for the selection of the flavor. Provided too are the up/down controls for selecting or cycling through the possible add-ons, size, and amount.\n\nMENU DISPLAY INDICATORS:\nHow can the customer keep track of the parameters that they chosen on the customer interface? To solve this problem, we provided individual LEDs and a single 7-segment digit display (amount) for showing the choices they selected on the interface. This subsystem is simply a combinational circuit that uses the parameters chosen by the user from the customer interface and lights a specific LED for their choice. This was done via a design of an 8-to-11 decoder and a couple of 2-to-4 decoders.\n\nORDER STRUCTURING UNIT:\nFor grouping the order information into the bitstring we have defined, the order structuring unit collects the data from the customer interface, buffers it, and structures the order bitstring in two 8-bit parallel-in serial-out (PISO) Motorola 74LS166 shift registers. For sending the order to the owner interface for parsing, inventory logistics, and tracking, we transferred the bitstring serially where the clock input was derived from the ATmega328P using one of the digital I/O pins.\n\nCUSTOMER INTERFACE:\nThe customer interface houses the ATmega328P. Provided also are two 20 column by 4 row LCDs that show the pending orders in one LCD, and the ingredient stocks available on the other. The customer can choose to acknowledge or deny the order provided by the customer. They can also see how many drinks they can make for the specific order based on the flavor and size.\n\nThe ingredient stocks are stored in the EEPROM, so hard resets do not wipe the stock. The system has a real-time clock module that resets the ingredients to default every Sunday 12:00AM. This matched the actual behavior of the client when restocking.` },
+						"2": { title: "cafe_embedded.c", content: `PROJECT: Client-Based Embedded System Design\n------------------------------------------------\n> "ATmega328P-based Cafe Ordering Interface With Stock and Beverage Monitoring"\n> Tech: ATmega328P, PlatformIO, C++, KiCAD, 74xx Logic ICs, Switched-Mode Power Supplies\n\nWHAT I LEARNED:\nClient needs analysis, soldering, digital signal conditioning, I2C communication, C++ data structures, EEPROM reading/writing, PCB design/manufacturing\n\nDESCRIPTION:\nThis is an embedded system meant for an owner of a small milk tea shop. Involves system design and implementation (PCB design) of kiosk-like ordering interface connected to an owner-facing interface that tracks pending orders while also providing insights for the remaining ingredients and drinks that can be made.\n\nHOW IT WORKS:\n+------------------+      +----------------------+      +---------------+\n|                  |---->|ORDER STRUCTURING UNIT|<--->|OWNER INTERFACE|\n|                  |      +----------------------+      +---------------+\n|                  |                |\n|CUSTOMER INTERFACE|                |\n|                  |                |\n|                  |                V\n|                  |      +-----------------------+\n|                  |<----|MENU DISPLAY INDICATORS|\n+------------------+      +-----------------------+\n\nTHE ORDER BITSTRING:\nThe scope of this project covers milk tea beverages that consist of the following parameters:\n> Size (small or medium)\n> Add-on (4 types)\n> Amount (1-9)\n> Flavor (11 flavors)\n\nBased on the number of possibilities per parameter, we constructed the order bitstring:\n+----------+---------------+--------------------+--------------+\n|   Size   |    Add-ons    |       Amount       |    Flavor    |\n|  (1 bit) |    (2 bits)   |      (4 bits)      |   (2 bits)   |\n+----------+---------------+--------------------+--------------+\n\nCUSTOMER INTERFACE:\nEach of the parameter values in the bitstring are mapped to a specific type. The order bitstring parameters are controlled by the customer through the customer interface. The customer interface consists of a 11-button keypad that allows for the selection of the flavor. Provided too are the up/down controls for selecting or cycling through the possible add-ons, size, and amount.\n\nMENU DISPLAY INDICATORS:\nHow can the customer keep track of the parameters that they chosen on the customer interface? To solve this problem, we provided individual LEDs and a single 7-segment digit display (amount) for showing the choices they selected on the interface. This subsystem is simply a combinational circuit that uses the parameters chosen by the user from the customer interface and lights a specific LED for their choice. This was done via a design of an 8-to-11 decoder and a couple of 2-to-4 decoders.\n\nORDER STRUCTURING UNIT:\nFor grouping the order information into the bitstring we have defined, the order structuring unit collects the data from the customer interface, buffers it, and structures the order bitstring in two 8-bit parallel-in serial-out (PISO) Motorola 74LS166 shift registers. For sending the order to the owner interface for parsing, inventory logistics, and tracking, we transferred the bitstring serially where the clock input was derived from the ATmega328P using one of the digital I/O pins.\n\nCUSTOMER INTERFACE:\nThe customer interface houses the ATmega328P. Provided also are two 20 column by 4 row LCDs that show the pending orders in one LCD, and the ingredient stocks available on the other. The customer can choose to acknowledge or deny the order provided by the customer. They can also see how many drinks they can make for the specific order based on the flavor and size.\n\nThe ingredient stocks are stored in the EEPROM, so hard resets do not wipe the stock. The system has a real-time clock module that resets the ingredients to default every Sunday 12:00AM. This matched the actual behavior of the client when restocking.` },
 
 						"3": { title: "boss_sensor.sh", content: `PROJECT:\nBoss_Sensor\n------------------------------------------------\n> Tech: TensorFlow, Keras, BASH, Raspberry Pi 3\n> Award: Silver Project Awardee\n> Source: github.com/rtcapoquian/ABOSS-SENSOR-2\n\nWHAT I LEARNED:\nMulticutural collaboration, BASH scripting, support-vector machines (SVMs), histogram of gradients (HOGs), Raspberry Pi 3\n\nDESCRIPTION:\nDesign and implementation of a computer vision system to detect specific persons and execute local BASH scripts upon detection. In this case, we demonstrated this capability of recognizing faces and executing local scripts through the detection of a person or a "boss", hence the name "Boss Sensor".\n\nUnique about this project was not the technology used, but the experience in collaborating with Taiwanese students. I realized that they are the type of people that listen more than they speak. They tend to remain silent until you initiate a conversation or a motion. It is only when you begin to initiate that they will decide to move further with your decision or to suggest an alternative.\n\nHOW IT WORKS:\nAnother interesting aspect to note is how clever the execution is for this project. We were only limited to the Raspberry Pi 3 that had limited resources and found difficulty in running standard neural networks. The project lead, Reji Capoquian, my colleague and now a DevOps engineer, spearheaded an approach that utilized only a traditional machine learning approach instead of a deep learning pathway that involved convolutional neural networks. We utilized a histogram of gradients (HOGs) that provided feature extraction from the individual frames. The classification was then done using a support-vector machine (SVM) algorithm.` },
 
@@ -430,7 +416,7 @@
 				const overlay = document.getElementById('blackwall-overlay');
 				
 				crt.classList.add('blackwall-active');
-				overlay.classList.add('active'); // Changed to use class for animation
+				overlay.classList.add('active'); 
 
 				setTimeout(() => {
 					crt.classList.remove('blackwall-active');
@@ -495,7 +481,7 @@
 						triggerBlackwall();
 					} 
 					else if (input === 'karma') {
-						printOutput("i'll find you one day");
+						printOutput("you'll find me one day");
 						triggerBlackwall();
 					} 
 					else if (currentDirectory) {
